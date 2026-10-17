@@ -20,6 +20,7 @@ var CARS = [['YARIS', 1], ['COROLLA', 2], ['FORTUNER', 3]];
 var CCOL = [0xe23b3b, 0x3b8de2, 0xf2f2f2, 0x2e2e2e, 0x48c26b, 0xe2a23b];
 var CNAME = ['rojo', 'azul', 'blanco', 'negro', 'verde', 'naranja'];
 var PCOL = [0xffe14d, 0xff5fa2], PHEX = ['#ffe14d', '#ff5fa2'];
+var BTN = ['ESPACIO', 'M']; // cómo se llama el botón de cada jugador en el teclado
 
 // DO NOT replace existing keys — they match the physical arcade cabinet wiring.
 // To add local testing shortcuts, append extra keys to any array.
@@ -28,7 +29,7 @@ const CABINET_KEYS = {
   P1_D: ['s'],
   P1_L: ['a'],
   P1_R: ['d'],
-  P1_1: ['u'],
+  P1_1: ['u', ' ', 'e'], // + ESPACIO/E: botón de P1 junto a WASD
   P1_2: ['i'],
   P1_3: ['o'],
   P1_4: ['j'],
@@ -38,7 +39,7 @@ const CABINET_KEYS = {
   P2_D: ['ArrowDown'],
   P2_L: ['ArrowLeft'],
   P2_R: ['ArrowRight'],
-  P2_1: ['r'],
+  P2_1: ['r', 'm', '.'], // + M/punto: botón de P2 junto a las flechas
   P2_2: ['t'],
   P2_3: ['y'],
   P2_4: ['f'],
@@ -54,6 +55,7 @@ var held = {}, JP = {};
 window.addEventListener('keydown', function (e) {
   var c = K2A[e.key.length == 1 ? e.key.toLowerCase() : e.key];
   if (!c) return;
+  e.preventDefault();
   if (!held[c]) JP[c] = true;
   held[c] = true;
 });
@@ -162,6 +164,8 @@ function create() {
   var st = function (s, c) { return { fontFamily: FONT, fontSize: s + 'px', color: c, fontStyle: 'bold' }; };
   this.add.rectangle(W / 2, TS / 2, W, TS, 0x0d0b1a).setDepth(20);
   G.hs = [this.add.text(10, 8, '', st(18, PHEX[0])).setDepth(21), this.add.text(W - 10, 8, '', st(18, PHEX[1])).setOrigin(1, 0).setDepth(21)];
+  this.add.text(10, 26, 'WASD + ' + BTN[0], st(9, '#8a7f3a')).setDepth(21);
+  this.add.text(W - 10, 26, 'FLECHAS + ' + BTN[1], st(9, '#8a3f62')).setOrigin(1, 0).setDepth(21);
   G.clock = this.add.text(W / 2, 4, '', st(16, '#ffffff')).setOrigin(0.5, 0).setDepth(21);
   G.phase = this.add.text(W / 2, 22, '', st(10, '#8f86c9')).setOrigin(0.5, 0).setDepth(21);
   G.msg = this.add.text(W / 2, 62, '', st(15, '#ffffff')).setOrigin(0.5).setDepth(30).setBackgroundColor('#0d0b1acc').setPadding(8, 4).setAlpha(0);
@@ -182,8 +186,8 @@ function titleScreen(sc) {
   c.add(sc.add.text(W / 2, 170, 'EL PARQUERO', { fontFamily: FONT, fontSize: '64px', color: '#ffe14d', fontStyle: 'bold' }).setOrigin(0.5).setShadow(4, 4, '#ff5fa2', 0));
   c.add(sc.add.text(W / 2, 230, 'LAS MERCEDES · CARACAS', { fontFamily: FONT, fontSize: '18px', color: '#ff5fa2' }).setOrigin(0.5));
   c.add(sc.add.text(W / 2, 345,
-    'Estaciona carros y entrégalos a tiempo.\nSi chocan manejando: ¡DUELO!\n\nP1: WASD + U      P2: FLECHAS + R\n\nRECOGE: camina hasta el VALET (cuadro rosado que parpadea)\nESTACIONA: entra a un puesto que brille (S, M, L)\nENTREGA: lleva al valet el carro que parpadea en verde', { fontFamily: FONT, fontSize: '15px', color: '#c8ccdc', align: 'center' }).setOrigin(0.5));
-  var p = sc.add.text(W / 2, 460, 'PULSA START', { fontFamily: FONT, fontSize: '26px', color: '#ffffff', fontStyle: 'bold' }).setOrigin(0.5);
+    'Estaciona carros y entrégalos a tiempo.\nSi chocan manejando: ¡DUELO!\n\nP1: WASD + ESPACIO        P2: FLECHAS + M\n\nRECOGE: camina hasta el VALET (cuadro rosado que parpadea)\nESTACIONA: entra a un puesto que brille (S, M, L)\nENTREGA: lleva al valet el carro que parpadea en verde', { fontFamily: FONT, fontSize: '15px', color: '#c8ccdc', align: 'center' }).setOrigin(0.5));
+  var p = sc.add.text(W / 2, 460, 'PULSA TU BOTÓN PARA EMPEZAR', { fontFamily: FONT, fontSize: '26px', color: '#ffffff', fontStyle: 'bold' }).setOrigin(0.5);
   c.add(p);
   sc.tweens.add({ targets: p, alpha: 0.2, duration: 450, yoyo: true, repeat: -1 });
   return c;
@@ -445,11 +449,12 @@ function draw(time) {
 
 // ---- DUELOS (3 tipos aleatorios) ----
 var DCOL = ['#ffe14d', '#ff5fa2'];
+var DDIR = ['U', 'D', 'L', 'R'], DARR = ['↑', '↓', '←', '→'];
 var DNAME = ['SEMÁFORO F1', 'MACHACA', 'SECUENCIA'];
 var DHELP = [
-  'Pulsa tu botón 1 cuando se apaguen las luces.\n¡Antes de tiempo = pierdes!',
-  'Machaca el botón 1 durante 3 segundos.\n¡Quien pulse más gana!',
-  'Repite la secuencia con los botones 1-4.\nP1: U I O J   ·   P2: R T Y F'
+  'Pulsa tu BOTÓN cuando se apaguen las luces.\n¡Antes de tiempo = pierdes!',
+  'Machaca tu BOTÓN durante 3 segundos.\n¡Quien pulse más gana!',
+  'Repite la secuencia con tu JOYSTICK.\nP1: WASD   ·   P2: FLECHAS'
 ];
 
 function duelStart(sc, cfg) {
@@ -473,7 +478,7 @@ function duelStart(sc, cfg) {
   T(0, -60, DHELP[ty], 13, '#c8ccdc');
   for (var p = 0; p < 2; p++) {
     var x = p ? 150 : -150;
-    T(x, 40, 'P' + (p + 1) + (p ? ' [R]' : ' [U]'), 20, DCOL[p]);
+    T(x, 40, 'P' + (p + 1) + ' [' + (ty == 2 ? ['WASD', 'FLECHAS'][p] : BTN[p]) + ']', 20, DCOL[p]);
     d.s[p] = T(x, 90, '', ty == 1 ? 40 : 16, DCOL[p]);
   }
   d.m = T(0, 140, 'LISTOS...', 24, '#ffffff');
@@ -491,10 +496,10 @@ function duelStart(sc, cfg) {
     d.s[0].setText('0');
     d.s[1].setText('0');
   } else {
-    for (var j = 0; j < 4; j++) d.q.push(1 + Math.floor(Math.random() * 4));
-    T(0, -10, d.q.join('  '), 38, '#ffffff');
+    for (var j = 0; j < 4; j++) d.q.push(Math.floor(Math.random() * 4));
+    T(0, -10, d.q.map(function (v) { return DARR[v]; }).join(' '), 38, '#ffffff');
     for (var p2 = 0; p2 < 2; p2++)
-      for (var j2 = 0; j2 < 4; j2++) d.dg[p2].push(T((p2 ? 150 : -150) - 45 + j2 * 30, 90, '' + d.q[j2], 26, '#444466'));
+      for (var j2 = 0; j2 < 4; j2++) d.dg[p2].push(T((p2 ? 150 : -150) - 45 + j2 * 30, 90, DARR[d.q[j2]], 26, '#444466'));
   }
   return d;
 }
@@ -550,8 +555,8 @@ function duelUpdate(sc, d, time, dt) {
   } else {
     for (i = 0; i < 2 && !w; i++) {
       p = o[i];
-      for (var b = 1; b <= 4 && !w; b++) {
-        if (!JP['P' + p + '_' + b]) continue;
+      for (var b = 0; b < 4 && !w; b++) {
+        if (!JP['P' + p + '_' + DDIR[b]]) continue;
         var a = p - 1;
         if (d.q[d.k[a]] == b) {
           d.dg[a][d.k[a]].setColor(DCOL[a]);
