@@ -156,6 +156,7 @@ function create() {
   G.spots = buildSpots();
   drawMap(this);
   G.dyn = this.add.graphics().setDepth(5);
+  G.vtag = this.add.text(VX * TS + 20, VY * TS + 46, '', { fontFamily: FONT, fontSize: '11px', fontStyle: 'bold' }).setOrigin(0.5, 0).setDepth(25).setStroke('#000', 3);
   G.ply = [mkPlayer(0, 12, 9), mkPlayer(1, 14, 9)];
   // HUD
   var st = function (s, c) { return { fontFamily: FONT, fontSize: s + 'px', color: c, fontStyle: 'bold' }; };
@@ -180,8 +181,8 @@ function titleScreen(sc) {
   c.add(sc.add.rectangle(W / 2, H / 2, W, H, 0x0d0b1a, 0.88));
   c.add(sc.add.text(W / 2, 170, 'EL PARQUERO', { fontFamily: FONT, fontSize: '64px', color: '#ffe14d', fontStyle: 'bold' }).setOrigin(0.5).setShadow(4, 4, '#ff5fa2', 0));
   c.add(sc.add.text(W / 2, 230, 'LAS MERCEDES · CARACAS', { fontFamily: FONT, fontSize: '18px', color: '#ff5fa2' }).setOrigin(0.5));
-  c.add(sc.add.text(W / 2, 330,
-    'Estaciona carros y entrégalos a tiempo.\nSi se cruzan: ¡DUELO!\n\nP1: WASD + U      P2: FLECHAS + R\nBotón 1 en el valet = tomar carro', { fontFamily: FONT, fontSize: '15px', color: '#c8ccdc', align: 'center' }).setOrigin(0.5));
+  c.add(sc.add.text(W / 2, 345,
+    'Estaciona carros y entrégalos a tiempo.\nSi se cruzan: ¡DUELO!\n\nP1: WASD + U      P2: FLECHAS + R\n\nRECOGE: camina hasta el VALET (cuadro rosado que parpadea)\nESTACIONA: entra a un puesto que brille (S, M, L)\nENTREGA: lleva al valet el carro que parpadea en verde', { fontFamily: FONT, fontSize: '15px', color: '#c8ccdc', align: 'center' }).setOrigin(0.5));
   var p = sc.add.text(W / 2, 460, 'PULSA START', { fontFamily: FONT, fontSize: '26px', color: '#ffffff', fontStyle: 'bold' }).setOrigin(0.5);
   c.add(p);
   sc.tweens.add({ targets: p, alpha: 0.2, duration: 450, yoyo: true, repeat: -1 });
@@ -191,7 +192,7 @@ function titleScreen(sc) {
 function update(time, dt) {
   dt = Math.min(dt, 50);
   if (G.st == 'title') {
-    if (JP.START1 || JP.START2 || JP.P1_1 || JP.P2_1) { G.title.destroy(); G.st = 'play'; beep(660, 0.15); msg('¡ABRIÓ LA NOCHE! Recibe carros en el valet', '#ffe14d'); }
+    if (JP.START1 || JP.START2 || JP.P1_1 || JP.P2_1) { G.title.destroy(); G.st = 'play'; beep(660, 0.15); msg('¡ABRIÓ LA NOCHE! Camina al VALET rosado para recoger carros', '#ffe14d'); }
   } else if (G.st == 'duel') {
     var r = duelUpdate(SC, G.duel.d, time, dt);
     if (r) { duelEnd(SC, G.duel.d); G.st = 'play'; var cb = G.duel.cb; G.duel = null; cb(r); G.cd = G.t + CD_T; }
@@ -233,7 +234,7 @@ function move(p, dt) {
   var spd = (p.car ? 5 : 6) * (p.fd > G.t ? 1.5 : 1);
   if (p.mov) {
     p.mv += spd * dt / 1000;
-    if (p.mv >= 1) { p.tx = p.nx; p.ty = p.ny; p.mv = 0; p.mov = false; valet(p); pickups(p); }
+    if (p.mv >= 1) { p.tx = p.nx; p.ty = p.ny; p.mv = 0; p.mov = false; valet(p); grab(p); pickups(p); }
   }
   if (!p.mov && !p.stun) {
     var d = dirOf(p);
@@ -272,11 +273,11 @@ function valet(p) {
   beep(660, 0.1); beep(990, 0.2);
 }
 
+// Tomar carro: basta con llegar a pie a la casilla del valet. Si el rival a pie está al lado, ¡duelo!
 function grab(p) {
-  var k = 'P' + (p.i + 1) + '_1';
-  if (!JP[k] || p.car || p.stun || p.tx != VX || p.ty != VY || !G.q.length) return;
+  if (G.st != 'play' || p.car || p.stun || p.mov || p.tx != VX || p.ty != VY || !G.q.length) return;
   var o = G.ply[1 - p.i];
-  if (!o.car && !o.stun && o.tx == VX && o.ty == VY && !o.mov) {
+  if (!o.car && !o.stun && Math.abs(o.tx - VX) + Math.abs(o.ty - VY) <= 1) {
     startDuel('¡CARRO EN DISPUTA!', 'El ganador se lleva el carro', function (w) { take(G.ply[w - 1]); });
   } else take(p);
 }
@@ -285,7 +286,7 @@ function take(p) {
   if (!G.q.length || p.car) return;
   p.car = G.q.shift();
   beep(500, 0.1);
-  msg('P' + (p.i + 1) + ' tiene un ' + p.car.name + ': busca puesto ' + ' SML'[p.car.sz], PHEX[p.i]);
+  msg('P' + (p.i + 1) + ' tiene un ' + p.car.name + ': entra a un puesto que brille', PHEX[p.i]);
 }
 
 function arrive() {
@@ -400,6 +401,17 @@ function draw(time) {
       g.fillStyle(0x000000).fillRect(s.x * TS + 4, s.y * TS + 34, 32, 4);
       g.fillStyle(f > 0.3 ? 0x5dff7a : 0xff4444).fillRect(s.x * TS + 4, s.y * TS + 34, 32 * f, 4);
     }
+  });
+  // señal del valet: parpadea cuando hay carros esperando o alguien trae un carro pedido
+  var due = G.ply.some(function (p) { return p.car && p.car.req; });
+  if (G.st == 'play' && (G.q.length || due) && bl) {
+    g.lineStyle(4, due ? 0x5dff7a : 0xff5fa2).strokeRect(VX * TS + 1, VY * TS + 1, TS - 2, TS - 2);
+  }
+  G.vtag.setText(due ? 'ENTREGA AQUÍ' : G.q.length ? 'RECOGE AQUÍ' : '').setColor(due ? '#5dff7a' : '#ff5fa2').setAlpha(bl ? 1 : 0.5);
+  // puestos donde cabe el carro que llevas
+  G.ply.forEach(function (p) {
+    if (!p.car || p.car.req || !bl) return;
+    G.spots.forEach(function (s) { if (!s.car && s.sz >= p.car.sz) g.lineStyle(2, PCOL[p.i], 0.9).strokeRect(s.x * TS + 6 + p.i * 2, s.y * TS + 6 + p.i * 2, TS - 12 - p.i * 4, TS - 12 - p.i * 4); });
   });
   // cola del valet
   G.q.forEach(function (c, i) { drawCar(g, (11 - i) * TS + 20, 8 * TS + 20, c, 0, null); });
