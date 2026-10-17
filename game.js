@@ -64,7 +64,7 @@ window.addEventListener('keyup', function (e) {
   if (c) held[c] = false;
 });
 
-var SC, G;
+var SC, G, SEL = 0; // SEL: 0 = 1 jugador vs máquina, 1 = 2 jugadores
 
 function beep(f, d, t) {
   try {
@@ -165,7 +165,7 @@ function create() {
   this.add.rectangle(W / 2, TS / 2, W, TS, 0x0d0b1a).setDepth(20);
   G.hs = [this.add.text(10, 8, '', st(18, PHEX[0])).setDepth(21), this.add.text(W - 10, 8, '', st(18, PHEX[1])).setOrigin(1, 0).setDepth(21)];
   this.add.text(10, 26, 'WASD + ' + BTN[0], st(9, '#8a7f3a')).setDepth(21);
-  this.add.text(W - 10, 26, 'FLECHAS + ' + BTN[1], st(9, '#8a3f62')).setOrigin(1, 0).setDepth(21);
+  G.ctl = this.add.text(W - 10, 26, 'FLECHAS + ' + BTN[1], st(9, '#8a3f62')).setOrigin(1, 0).setDepth(21);
   G.clock = this.add.text(W / 2, 4, '', st(16, '#ffffff')).setOrigin(0.5, 0).setDepth(21);
   G.phase = this.add.text(W / 2, 22, '', st(10, '#8f86c9')).setOrigin(0.5, 0).setDepth(21);
   G.msg = this.add.text(W / 2, 62, '', st(15, '#ffffff')).setOrigin(0.5).setDepth(30).setBackgroundColor('#0d0b1acc').setPadding(8, 4).setAlpha(0);
@@ -183,21 +183,28 @@ function mkPlayer(i, x, y) {
 function titleScreen(sc) {
   var c = sc.add.container(0, 0).setDepth(80);
   c.add(sc.add.rectangle(W / 2, H / 2, W, H, 0x0d0b1a, 0.88));
-  c.add(sc.add.text(W / 2, 170, 'EL PARQUERO', { fontFamily: FONT, fontSize: '64px', color: '#ffe14d', fontStyle: 'bold' }).setOrigin(0.5).setShadow(4, 4, '#ff5fa2', 0));
-  c.add(sc.add.text(W / 2, 230, 'LAS MERCEDES · CARACAS', { fontFamily: FONT, fontSize: '18px', color: '#ff5fa2' }).setOrigin(0.5));
-  c.add(sc.add.text(W / 2, 345,
+  c.add(sc.add.text(W / 2, 120, 'EL PARQUERO', { fontFamily: FONT, fontSize: '64px', color: '#ffe14d', fontStyle: 'bold' }).setOrigin(0.5).setShadow(4, 4, '#ff5fa2', 0));
+  c.add(sc.add.text(W / 2, 178, 'LAS MERCEDES · CARACAS', { fontFamily: FONT, fontSize: '18px', color: '#ff5fa2' }).setOrigin(0.5));
+  c.add(sc.add.text(W / 2, 335,
     'Estaciona carros y entrégalos a tiempo.\nSi chocan manejando: ¡DUELO!\n\nP1: WASD + ESPACIO        P2: FLECHAS + M\n\nRECOGE: camina hasta el VALET (cuadro rosado que parpadea)\nESTACIONA: entra a un puesto que brille (S, M, L)\nENTREGA: lleva al valet el carro que parpadea en verde', { fontFamily: FONT, fontSize: '15px', color: '#c8ccdc', align: 'center' }).setOrigin(0.5));
-  var p = sc.add.text(W / 2, 460, 'PULSA TU BOTÓN PARA EMPEZAR', { fontFamily: FONT, fontSize: '26px', color: '#ffffff', fontStyle: 'bold' }).setOrigin(0.5);
-  c.add(p);
-  sc.tweens.add({ targets: p, alpha: 0.2, duration: 450, yoyo: true, repeat: -1 });
+  G.opt = ['1 JUGADOR  (vs MÁQUINA)', '2 JUGADORES'].map(function (s, i) {
+    var t = sc.add.text(W / 2, 470 + i * 34, s, { fontFamily: FONT, fontSize: '24px', color: '#ffffff', fontStyle: 'bold' }).setOrigin(0.5);
+    c.add(t);
+    return t;
+  });
+  c.add(sc.add.text(W / 2, 545, '↑↓ para elegir · BOTÓN para empezar', { fontFamily: FONT, fontSize: '13px', color: '#8f86c9' }).setOrigin(0.5));
   return c;
 }
 
 function update(time, dt) {
   dt = Math.min(dt, 50);
   if (G.st == 'title') {
-    if (JP.START1 || JP.START2 || JP.P1_1 || JP.P2_1) { G.title.destroy(); G.st = 'play'; beep(660, 0.15); msg('¡ABRIÓ LA NOCHE! Camina al VALET rosado para recoger carros', '#ffe14d'); }
+    if (JP.P1_U || JP.P1_D || JP.P2_U || JP.P2_D) { SEL = 1 - SEL; beep(440, 0.05); }
+    G.opt.forEach(function (t, i) { t.setText((i == SEL ? '▶ ' : '  ') + t.text.replace(/^[▶ ]+/, '')).setColor(i == SEL ? '#ffe14d' : '#666688'); });
+    if (JP.START1 || JP.START2 || JP.P1_1 || JP.P2_1) { G.cpu = SEL == 0; G.title.destroy(); G.st = 'play';
+      G.hs[1].setColor(PHEX[1]); G.ctl.setText(G.cpu ? 'MÁQUINA' : 'FLECHAS + ' + BTN[1]); beep(660, 0.15); msg('¡ABRIÓ LA NOCHE! Camina al VALET rosado para recoger carros', '#ffe14d'); }
   } else if (G.st == 'duel') {
+    if (G.cpu) aiDuel(G.duel.d, time);
     var r = duelUpdate(SC, G.duel.d, time, dt);
     if (r) { duelEnd(SC, G.duel.d); G.st = 'play'; var cb = G.duel.cb; G.duel = null; cb(r); G.cd = G.t + CD_T; }
   } else if (G.st == 'play') {
@@ -217,6 +224,7 @@ function play(dt) {
   if (ph < 2 && G.t >= G.nArr) { arrive(); G.nArr = G.t + (ph ? ARR2 : ARR1) * (0.75 + Math.random() * 0.5); }
   if (ph > 0 && G.t >= G.nReq) { request(); G.nReq = G.t + (ph == 1 ? REQ2 : REQ3) * (0.75 + Math.random() * 0.5); }
   if (G.t >= G.nPick) { spawnPick(); G.nPick = G.t + PICK_T; }
+  if (G.cpu) aiDrive(G.ply[1]);
   G.ply.forEach(function (p) { move(p, dt); grab(p); });
   // choque: solo entre dos carros (a pie se pasan de largo)
   var a = G.ply[0], b = G.ply[1];
@@ -235,7 +243,7 @@ function dirOf(p) {
 }
 
 function move(p, dt) {
-  var spd = (p.car ? 5 : 6) * (p.fd > G.t ? 1.5 : 1);
+  var spd = (p.car ? 5 : 6) * (p.fd > G.t ? 1.5 : 1) * (G.cpu && p.i ? AI_SPD : 1);
   if (p.mov) {
     p.mv += spd * dt / 1000;
     if (p.mv >= 1) { p.tx = p.nx; p.ty = p.ny; p.mv = 0; p.mov = false; valet(p); grab(p); pickups(p); }
@@ -372,14 +380,84 @@ function marioEvent() {
 
 function endNight() {
   G.st = 'end'; G.t2 = SC.time.now + 1500;
-  var a = G.ply[0].sc, b = G.ply[1].sc, w = a > b ? 'GANA P1' : b > a ? 'GANA P2' : 'EMPATE';
+  var a = G.ply[0].sc, b = G.ply[1].sc, w = a > b ? 'GANA P1' : b > a ? (G.cpu ? 'GANA LA MÁQUINA' : 'GANA P2') : 'EMPATE';
   var c = SC.add.container(0, 0).setDepth(80);
   c.add(SC.add.rectangle(W / 2, H / 2, W, H, 0x0d0b1a, 0.9));
   c.add(SC.add.text(W / 2, 170, '3:00 AM · CERRÓ EL LOCAL', { fontFamily: FONT, fontSize: '22px', color: '#8f86c9' }).setOrigin(0.5));
   c.add(SC.add.text(W / 2, 250, w, { fontFamily: FONT, fontSize: '60px', color: a > b ? PHEX[0] : b > a ? PHEX[1] : '#ffffff', fontStyle: 'bold' }).setOrigin(0.5));
-  c.add(SC.add.text(W / 2, 340, 'P1  ' + a + '   ·   P2  ' + b, { fontFamily: FONT, fontSize: '26px', color: '#ffffff' }).setOrigin(0.5));
+  c.add(SC.add.text(W / 2, 340, 'P1  ' + a + '   ·   ' + (G.cpu ? 'CPU' : 'P2') + '  ' + b, { fontFamily: FONT, fontSize: '26px', color: '#ffffff' }).setOrigin(0.5));
   c.add(SC.add.text(W / 2, 440, 'START para otra noche', { fontFamily: FONT, fontSize: '18px', color: '#c8ccdc' }).setOrigin(0.5));
   beep(523, 0.15); setTimeout(function () { beep(659, 0.15); }, 160); setTimeout(function () { beep(784, 0.3); }, 320);
+}
+
+// ---- Máquina (modo 1 jugador): maneja a P2 ----
+var AI_SPD = 0.9;          // la máquina va un poco más lenta
+var AI_REACT = [260, 520]; // ms de reacción en el semáforo
+var AI_MASH = [120, 190];  // ms entre pulsaciones en machaca
+var AI_SEQ = [300, 460];   // ms entre flechas en secuencia
+var AI_ERR = 0.08;         // probabilidad de equivocarse en la secuencia
+var NB = [[0, -1, 'U'], [0, 1, 'D'], [-1, 0, 'L'], [1, 0, 'R']];
+
+// Primer paso del camino más corto por las calles hasta una casilla que cumpla goal(x, y)
+function bfs(sx, sy, goal) {
+  if (goal(sx, sy)) return 'here';
+  var seen = {}, q = [[sx, sy, null]];
+  seen[sx + ',' + sy] = 1;
+  while (q.length) {
+    var c = q.shift();
+    for (var i = 0; i < 4; i++) {
+      var x = c[0] + NB[i][0], y = c[1] + NB[i][1], k = x + ',' + y;
+      if (seen[k] || !isRoad(x, y)) continue;
+      seen[k] = 1;
+      var f = c[2] || NB[i][2];
+      if (goal(x, y)) return f;
+      q.push([x, y, f]);
+    }
+  }
+  return null;
+}
+
+// Dirección hacia un puesto pegado a (x, y) que cumpla ok(s), o null
+function spotDir(x, y, ok) {
+  for (var i = 0; i < 4; i++) { var s = spotAt(x + NB[i][0], y + NB[i][1]); if (s && ok(s)) return NB[i][2]; }
+  return null;
+}
+
+function aiDrive(p) {
+  ['U', 'D', 'L', 'R'].forEach(function (d) { held['P2_' + d] = false; });
+  if (p.mov || p.stun) return;
+  var ok = null, goal, d;
+  if (p.car && p.car.req) goal = function (x, y) { return x == VX && y == VY; };
+  else if (p.car) ok = function (s) { return !s.car && s.sz >= p.car.sz; };
+  else if (G.cars.some(function (c) { return c.req && c.spot; })) ok = function (s) { return s.car && s.car.req; };
+  else if (G.q.length) goal = function (x, y) { return x == VX && y == VY; };
+  else if (G.picks.length) goal = function (x, y) { return G.picks.some(function (k) { return k.x == x && k.y == y; }); };
+  else goal = function (x, y) { return x == 13 && y == 7; };
+  if (ok) {
+    d = spotDir(p.tx, p.ty, ok);
+    if (!d) d = bfs(p.tx, p.ty, function (x, y) { return !!spotDir(x, y, ok); });
+  } else d = bfs(p.tx, p.ty, goal);
+  if (d && d != 'here') held['P2_' + d] = true;
+}
+
+function rnd(r) { return r[0] + Math.random() * (r[1] - r[0]); }
+
+function aiDuel(d, time) {
+  if (!d.go || d.w) return;
+  var a = d.ai || (d.ai = { t: 0, fs: Math.random() < 0.06 });
+  if (d.ty == 0) {
+    if (a.fs && d.n >= 4 && !d.on) JP.P2_1 = true;          // a veces sale en falso
+    if (d.on && !a.t) a.t = time + rnd(AI_REACT);
+    if (a.t && time >= a.t) JP.P2_1 = true;
+  } else if (time >= a.t) {
+    if (d.ty == 1) { JP.P2_1 = true; a.t = time + rnd(AI_MASH); }
+    else {
+      var r = d.q[d.k[1]];
+      if (Math.random() < AI_ERR) r = (r + 1) % 4;
+      JP['P2_' + DDIR[r]] = true;
+      a.t = time + rnd(AI_SEQ);
+    }
+  }
 }
 
 // ---- Dibujo ----
@@ -444,7 +522,7 @@ function draw(time) {
   var h = 19 + (G.t / NIGHT) * 8, hh = Math.floor(h) % 24, mm = Math.floor((h % 1) * 60);
   G.clock.setText((hh % 12 || 12) + ':' + (mm < 10 ? '0' : '') + mm + (hh >= 12 ? ' PM' : ' AM'));
   G.phase.setText(G.t < PH1 ? 'LLEGADAS' : G.t < PH2 ? 'HORA PICO' : 'CIERRE');
-  G.ply.forEach(function (p, i) { G.hs[i].setText('P' + (i + 1) + ' ' + p.sc + (p.wh > G.t ? ' x2' : '')); });
+  G.ply.forEach(function (p, i) { G.hs[i].setText((G.cpu && i ? 'CPU' : 'P' + (i + 1)) + ' ' + p.sc + (p.wh > G.t ? ' x2' : '')); });
 }
 
 // ---- DUELOS (3 tipos aleatorios) ----
