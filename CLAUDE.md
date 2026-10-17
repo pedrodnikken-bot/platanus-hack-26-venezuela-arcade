@@ -31,27 +31,34 @@ Claude actúa como ingeniero de sistemas del equipo: maneja git, ramas, PRs, reg
 
 **Obligatorio:** estética retro.
 
-**Modos.** 1 jugador (contra la máquina) o 2 jugadores (versus). Lo más importante es la competitividad entre jugadores; el primer objetivo es un demo jugable para probar esa jugabilidad.
+**Modos.** 1 jugador (contra la máquina) o 2 jugadores (versus), en una sola pantalla compartida. Lo más importante es la competitividad entre jugadores.
+**Demo (primer objetivo):** solo Las Mercedes y solo 2 jugadores; el modo contra la máquina viene después.
+
+**Cómo se gana (estilo Mario Party).** Gana quien estaciona más carros. Se suman puntos por carro estacionado y por ganar mini juegos. Desempates: primero las propinas acumuladas, luego los puntos. *(Pendiente de confirmar el orden exacto.)*
+
+**Movimiento.** Por cuadrícula, como Pac-Man: arriba/abajo/izquierda/derecha solo por las calles. Sin sentido de circulación: se puede ir en cualquier dirección.
 
 **Ciclo de juego.**
 1. Llega un carro al puesto de valet parking (donde se recibe y se entrega).
-2. Si los dos parqueros están en el puesto cuando llega, se disputan el carro con un **mini juego rápido de duelo** (el primero en tocar el botón, salida tipo semáforo de F1, etc.). El que pierde se queda sin el carro.
-3. Manejas el carro por el mapa y buscas un puesto **del tamaño correcto**.
-4. Al estacionar hay un **mini juego de botones**.
-5. Cuando el cliente sale, hay que ir a buscar el carro (otro mini juego al abrirlo/sacarlo) y entregarlo en el puesto de valet.
+2. Si los dos parqueros están en el puesto cuando llega, se disputan el carro con un **duelo rápido** (el primero en tocar el botón, salida tipo semáforo de F1, etc.). El que pierde se queda sin el carro.
+3. Manejas el carro por la cuadrícula y buscas un puesto **del tamaño correcto**.
+4. Estacionar es directo (decidido: **sin** mini juego al estacionar, para no tapar la pantalla del otro).
+5. Cuando el cliente sale, hay que ir a buscar el carro y entregarlo en el puesto de valet.
 
-**Mini juegos de botones** (al estacionar, al sacar el carro y en los duelos):
+**Rivalidad (decidido):** el rival puede robarte un puesto, chocarte y bloquearte la calle.
+**Problema abierto:** que los duelos sean constantes y no solo cuando coinciden en el valet. Ver propuestas en la conversación del 2026-10-17.
+
+**Mini juegos de botones** (en los duelos):
 - Machacar un botón rápido muchas veces.
 - Secuencia exacta de botones tipo entrenamiento de reflejos de F1 (ej. 1-2-3-4).
 - Reacción: el primero en pulsar cuando se da la señal.
 
 **Carros (3 tamaños, referencia Toyota):** chico = Yaris, mediano = Corolla, grande = Fortuner. Los puestos en la calle también tienen tamaños; el carro debe caber.
 
-**Propinas / boosts** (estilo venezolano, propinas locas):
-- **Whisky** (el vaso con el que sale el cliente del local): x2 de puntos, pero sube la dificultad al estacionar.
-- **Propina** (dinero).
-- **Comida.**
-- Efectos de propina y comida por definir.
+**Propinas / boosts** (estilo venezolano, propinas locas). Cada jugador lleva su marcador de puntos y su lista de propinas.
+- **Whisky** (el vaso con el que sale el cliente del local): muchos puntos (x2), pero cuesta más manejar y estacionar porque "vas borracho".
+- **Comida:** te hace más rápido y ganas más puntos por un rato.
+- **Propina** (dinero): cuenta para el desempate.
 
 **Mapas.** Cada mapa tiene un puesto de valet parking y puestos para estacionar por toda la calle. Primer mapa: **Las Mercedes** (Caracas).
 
