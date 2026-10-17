@@ -214,9 +214,9 @@ function play(dt) {
   if (ph > 0 && G.t >= G.nReq) { request(); G.nReq = G.t + (ph == 1 ? REQ2 : REQ3) * (0.75 + Math.random() * 0.5); }
   if (G.t >= G.nPick) { spawnPick(); G.nPick = G.t + PICK_T; }
   G.ply.forEach(function (p) { move(p, dt); grab(p); });
-  // choque
+  // choque: solo entre dos carros (a pie se pasan de largo)
   var a = G.ply[0], b = G.ply[1];
-  if (G.t > G.cd && !a.stun && !b.stun && Math.abs(a.px - b.px) + Math.abs(a.py - b.py) < 26) return crash();
+  if (a.car && b.car && G.t > G.cd && !a.stun && !b.stun && Math.abs(a.px - b.px) + Math.abs(a.py - b.py) < 26) return crash();
   if (G.t >= G.nEv) { G.nEv = G.t + EVERY; return marioEvent(); }
   G.ply.forEach(function (p) { if (p.stun && G.t > p.stun) p.stun = 0; });
 }
@@ -355,7 +355,7 @@ function crash() {
     var win = G.ply[w - 1], lose = G.ply[2 - w];
     add(win, PT.duel, 'DUELO');
     lose.stun = G.t + STUN_T;
-    if (lose.car) add(lose, PT.scratch, 'RAYÓN');
+    add(lose, PT.scratch, 'RAYÓN');
   });
 }
 
