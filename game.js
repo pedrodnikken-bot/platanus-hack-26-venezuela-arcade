@@ -182,7 +182,7 @@ function titleScreen(sc) {
   c.add(sc.add.text(W / 2, 170, 'EL PARQUERO', { fontFamily: FONT, fontSize: '64px', color: '#ffe14d', fontStyle: 'bold' }).setOrigin(0.5).setShadow(4, 4, '#ff5fa2', 0));
   c.add(sc.add.text(W / 2, 230, 'LAS MERCEDES · CARACAS', { fontFamily: FONT, fontSize: '18px', color: '#ff5fa2' }).setOrigin(0.5));
   c.add(sc.add.text(W / 2, 345,
-    'Estaciona carros y entrégalos a tiempo.\nSi se cruzan: ¡DUELO!\n\nP1: WASD + U      P2: FLECHAS + R\n\nRECOGE: camina hasta el VALET (cuadro rosado que parpadea)\nESTACIONA: entra a un puesto que brille (S, M, L)\nENTREGA: lleva al valet el carro que parpadea en verde', { fontFamily: FONT, fontSize: '15px', color: '#c8ccdc', align: 'center' }).setOrigin(0.5));
+    'Estaciona carros y entrégalos a tiempo.\nSi chocan manejando: ¡DUELO!\n\nP1: WASD + U      P2: FLECHAS + R\n\nRECOGE: camina hasta el VALET (cuadro rosado que parpadea)\nESTACIONA: entra a un puesto que brille (S, M, L)\nENTREGA: lleva al valet el carro que parpadea en verde', { fontFamily: FONT, fontSize: '15px', color: '#c8ccdc', align: 'center' }).setOrigin(0.5));
   var p = sc.add.text(W / 2, 460, 'PULSA START', { fontFamily: FONT, fontSize: '26px', color: '#ffffff', fontStyle: 'bold' }).setOrigin(0.5);
   c.add(p);
   sc.tweens.add({ targets: p, alpha: 0.2, duration: 450, yoyo: true, repeat: -1 });
