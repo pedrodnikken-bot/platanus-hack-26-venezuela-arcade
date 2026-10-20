@@ -81,9 +81,21 @@ const CABINET_KEYS = {
     P = [0, 1].map(i => ({ i, x: 12 + i * 2, y: 9, nx: 12 + i * 2, ny: 9, m: 0, mv: 0, dx: 0, dy: 1, px: 0, py: 0, c: 0, sc: 0, st: 0, wh: 0, fd: 0, bt: 0 }));
     // portada con menú
     TT = S.add.container(0, 0).setDepth(40);
-    TT.add([S.add.rectangle(400, 300, 800, 600, 0x111318, .93), tx(400, 130, 'EL PARQUERO', 60, PH[0]), tx(400, 185, 'LAS MERCEDES · CARACAS', 16, PH[1]),
-      tx(400, 300, 'Recoge carros en el VALET rosado\nEstaciónalos en un puesto donde quepan (S M L)\nEntrega a tiempo el que parpadea = PROPINA\nSi chocan manejando: ¡DUELO!\n\nP1: WASD + ESPACIO     P2: FLECHAS + M', 15, '#aab')]);
-    O = ['1 JUGADOR vs MÁQUINA', '2 JUGADORES'].map((s, i) => tx(400, 450 + i * 36, s, 24));
+    // Recrea el estilo de la portada con el mapa y formas; evita cargar un PNG en el juego.
+    const art = S.add.graphics();
+    for (const spot of spots) {
+      const x = spot.x * T + 20, y = spot.y * T + 20;
+      art.fillStyle(CC[spots.indexOf(spot) % CC.length]).fillRoundedRect(x - 12, y - 7, 24, 14, 3);
+      art.fillStyle(0x223344).fillRect(x - 3, y - 5, 6, 10);
+    }
+    TT.add([art, S.add.rectangle(400, 136, 800, 204, 0x111318, .97),
+      S.add.rectangle(400, 36, 800, 4, PC[1]), S.add.rectangle(400, 238, 800, 4, PC[1]),
+      tx(404, 118, 'EL PARQUERO', 68, PH[1]), tx(400, 113, 'EL PARQUERO', 68, PH[0]),
+      tx(400, 182, 'LAS MERCEDES · CARACAS', 22, PH[1]),
+      tx(400, 214, 'Estaciona · Entrega a tiempo · Gana el duelo', 14, '#aab'),
+      S.add.rectangle(400, 554, 800, 92, 0x111318),
+      tx(400, 591, '↑ / ↓: elegir · ENTER: jugar', 11, '#aab')]);
+    O = ['1 JUGADOR vs MÁQUINA', '2 JUGADORES'].map((s, i) => tx(400, 529 + i * 32, s, 22));
     TT.add(O);
   }
 
@@ -105,11 +117,27 @@ const CABINET_KEYS = {
   }
 
   // ---- Una noche: llegadas (7-10 pm), hora pico (10-12), cierre (12-3 am) ----
+  // Cuenta también los carros en cola y en manos de jugadores: todos necesitan caber.
+  function roomFor(size = 0, spot = 0, parked = 0) {
+    const free = spots.filter(s => !s.c && s != spot).map(s => s.s).sort((a, b) => b - a);
+    const waiting = cars.filter(c => !c.p && !c.r && c != parked).map(c => c.s);
+    if (size) waiting.push(size);
+    waiting.sort((a, b) => b - a);
+    return waiting.every((s, i) => free[i] >= s);
+  }
+
   function play(dt) {
     t += dt;
     if (t >= NIGHT) return end();
     const ph = t < 6e4 ? 0 : t < 12e4 ? 1 : 2, v = () => .75 + R() / 2;
-    if (ph < 2 && t > nA) { if (q.length < 3) { const c = { s: 1 + R() * 3 | 0, k: CC[R() * 5 | 0], r: 0, dl: 0, p: 0 }; q.push(c); cars.push(c); bp(380); } nA = t + (ph ? 7e3 : 4e3) * v(); }
+    if (ph < 2 && t > nA) {
+      const sizes = [1, 2, 3].filter(s => roomFor(s));
+      if (q.length < 3 && sizes.length) {
+        const c = { s: sizes[R() * sizes.length | 0], k: CC[R() * 5 | 0], r: 0, dl: 0, p: 0 };
+        q.push(c); cars.push(c); bp(380);
+      }
+      nA = t + (ph ? 7e3 : 4e3) * v();
+    }
     if (ph && t > nR) {
       const a = cars.filter(c => c.p && !c.r);
       if (a.length) { const c = a[R() * a.length | 0]; c.r = 1; c.dl = t + 15e3; msg('¡Salió un dueño! Entrega el carro que parpadea'); bp(880); }
@@ -157,6 +185,7 @@ const CABINET_KEYS = {
   function park(p, s) {
     if (p.c && !s.c) {
       if (p.c.s > s.s) return msg('¡No cabe! Busca un puesto más grande'), bp(110);
+      if (!roomFor(0, s, p.c)) return msg('Deja ese puesto para un carro más grande'), bp(110);
       s.c = p.c; p.c.p = s; p.c = 0; add(p, 100); bp(700);
     } else if (!p.c && s.c && s.c.r) { p.c = s.c; s.c.p = 0; s.c = 0; bp(400); }
   }
@@ -208,7 +237,7 @@ const CABINET_KEYS = {
     if (p.mv || p.st) return;
     const V = (x, y) => x == VX && y == VY;
     let ok, goal = V;
-    if (p.c && !p.c.r) ok = s => !s.c && s.s >= p.c.s;
+    if (p.c && !p.c.r) ok = s => !s.c && s.s >= p.c.s && roomFor(0, s, p.c);
     else if (!p.c && cars.some(c => c.r && c.p)) ok = s => s.c && s.c.r;
     else if (!p.c && !q.length) goal = (x, y) => picks.some(k => k.x == x && k.y == y) || x == 13 && y == 7;
     const d = ok ? sd(p.x, p.y, ok) || bfs(p.x, p.y, (x, y) => sd(x, y, ok)) : bfs(p.x, p.y, goal);
@@ -280,7 +309,7 @@ const CABINET_KEYS = {
     const bl = (time / 250 | 0) % 2, due = P.some(p => p.c && p.c.r);
     g.clear();
     if (st == 1 && (q.length || due) && bl) g.lineStyle(4, due ? 0x55ff77 : PC[1]).strokeRect(VX * T + 2, VY * T + 2, 36, 36);
-    for (const p of P) if (p.c && !p.c.r && bl) for (const s of spots) if (!s.c && s.s >= p.c.s) g.lineStyle(2, PC[p.i]).strokeRect(s.x * T + 7, s.y * T + 7, 26, 26);
+    for (const p of P) if (p.c && !p.c.r && bl) for (const s of spots) if (!s.c && s.s >= p.c.s && roomFor(0, s, p.c)) g.lineStyle(2, PC[p.i]).strokeRect(s.x * T + 7, s.y * T + 7, 26, 26);
     for (const s of spots) if (s.c) {
       const c = s.c, x = s.x * T, y = s.y * T, f = M.max(0, (c.dl - t) / 15e3);
       car(x + 20, y + 20, c, !s.h, c.r && bl && (f ? 0x55ff77 : 0xff4444));
