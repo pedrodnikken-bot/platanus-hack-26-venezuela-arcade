@@ -15,7 +15,7 @@ const CABINET_KEYS = {
 
 (() => {
   // ---- Ajustes ----
-  const F = 'monospace', M = Math, R = M.random, PI = M.PI, NIGHT = 300, OR = 125, SPR = 175;
+  const F = 'monospace', M = Math, R = M.random, PI = M.PI, NIGHT = 300, OR = 125, SPR = 215;
 
   // ---- Entrada ----
   const K = {}, H = {}, J = {};
@@ -30,7 +30,7 @@ const CABINET_KEYS = {
   // ---- Estado ----
   // P jugador: x,y · a mirada · sp velocidad · cd/cdM enfriamiento · rr alcance · dm daño · full 360 · sw fin del swing
   // enemigo: o sprite · k tipo · m modo (0 vuela, 1 camina, 2 salta, 3 se lanza) · hp · v vel · d daño/s · bt picada · tm/ds ciclo de salto
-  let S, G, st, t, P, pl, rk, cn, en, dr, hp, hpM, off, gas, gasM, bom, offE, pz, sk, vac, spE, hT, arp, vcn, GV, rg, xp, xpN, lvl, kills, fans, spi, nS, nW, nB, nD, nH, dk, dark, dkE, seen, sS, ol;
+  let S, G, st, t, P, pl, rk, cn, en, dr, hp, hpM, off, gas, gasM, bom, offE, pz, sk, vac, spE, hT, arp, vcn, GV, rg, lv, inv, xp, xpN, lvl, kills, fans, spi, nS, nW, nB, nD, nH, dk, dark, dkE, seen, sS, ol;
   let HUD, cards, ch, cs, pT, et, top = [], bz, bzg, ls, sp, deco, MN, mi, ci = 0, CC;
 
   const tx = (x, y, s, z, c = '#fff', d = 60) => S.add.text(x, y, s, { fontFamily: F, fontSize: z + 'px', color: c, fontStyle: 'bold', align: 'center', stroke: '#000', strokeThickness: M.max(2, z / 6) }).setOrigin(.5).setDepth(d);
@@ -75,6 +75,7 @@ const CABINET_KEYS = {
     px('rd', ['.ss.', 'yyyy', 'yrry', 'yrry', 'yggy', 'yyyy', 'yyyy'], { s: 0xaaaaaa, y: 0xffd400, r: 0xd62828, g: 0x2fa84f });
     px('bm', ['..ss..', '.rrrr.', 'rrrrrr', 'ryyyyr', 'rygyyr', 'ryyyyr', 'rrrrrr', '.rrrr.'], { s: 0x999999, r: 0xd62828, y: 0xffd400, g: 0x2fa84f });
     px('vc', ['p.wwwwww..', 'ppwccccwnn', 'p.wwwwww..'], { p: 0x999999, w: 0xffffff, c: 0x4dd8ff, n: 0xcccccc });
+    px('vd', ['.rr.rr.', 'rrrrrrr', 'rrrrrrr', '.rrrrr.', '..rrr..', '...r...'], { r: 0xff3b6b });
     px('gt', ['..r..', '..r..', '.rrr.', 'rrrrr', 'rrwrr', '.rrr.'], { r: 0xd62828, w: 0xffaaaa });
     px('sp', ['.rr.', 'rrrr', '.rr.'], { r: 0x8a1010 });
     if (!S.textures.exists('dk')) {
@@ -170,7 +171,7 @@ const CABINET_KEYS = {
   function help() {
     clr(); st = 4;
     MN.push(S.add.rectangle(400, 300, 800, 600, 0x000000, .85).setDepth(55), tx(400, 50, 'CÓMO JUGAR', 34, '#ffe14d'),
-      tx(205, 300, 'JOYSTICK  moverte\n\nBOTÓN 1  raquetazo\n\nBOTÓN 2  OFF\n(repele la nube)\n\nBOTÓN 3  spray RAID\n(mantener)\n\nBOTÓN 4  bomba RAID\n\nBOTÓN 5  comer arepa\n(+vida)\n\nBOTÓN 6  vacuna\n(cura enfermedad y veneno)\n\nLlega a las 6:00 AM', 14, '#fff'),
+      tx(205, 300, 'JOYSTICK  moverte\n\nBOTÓN 1  raquetazo\n\nBOTÓN 2  OFF\n(repele la nube)\n\nBOTÓN 3  spray RAID\n(mantener)\n\nBOTÓN 4  bomba RAID\n\nBOTÓN 5  comer arepa\n(+vida)\n\nBOTÓN 6  vacuna\n(cura enfermedad y veneno)\n\n+1 vida cada 4 niveles\nLlega a las 6:00 AM', 14, '#fff'),
       tx(590, 100, 'LOS BICHOS', 20, '#ff4d4d'));
     BE.forEach((b, i) => {
       const y = 140 + i * 38, im = S.add.image(450, y, b[0]).setScale(i == 9 ? 4 : 2.5).setDepth(61);
@@ -189,7 +190,7 @@ const CABINET_KEYS = {
   function start() {
     clr(); deco.forEach(o => o.destroy());
     st = 1; t = 0; en = []; dr = []; MS = []; kills = 0; xp = 0; xpN = 12; lvl = 1; fans = 0; spi = 0; sp = 0; ls = 0; sS = 0; seen = { z: 1 }; ol = 1;
-    hp = hpM = 100; off = 2; gas = gasM = 100; bom = 1; offE = -1; pz = 0; sk = {}; vac = 1; spE = 0; hT = -1; arp = 1; vcn = 1; rg = 0; nS = 0; nW = 40; nB = 120; nD = 55; nH = 90; dark = 0; dkE = 0;
+    hp = hpM = 100; off = 2; gas = gasM = 100; bom = 1; offE = -1; pz = 0; sk = {}; vac = 1; spE = 0; hT = -1; arp = 1; vcn = 1; rg = 0; lv = 1; inv = 0; nS = 0; nW = 40; nB = 120; nD = 55; nH = 90; dark = 0; dkE = 0;
     P = { x: 400, y: 330, a: 0, sp: 170, cd: 0, cdM: .32, rr: 62, dm: 1, full: 0, sw: 0 };
     P.ah = 30; P.ic = 0; CH[ci][3]();
     pl = S.add.image(P.x, P.y, 'pl' + ci).setScale(3).setDepth(6);
@@ -209,7 +210,8 @@ const CABINET_KEYS = {
       rl: tx(342, 22, 'RAID', 11, '#000').setStroke('#000', 0),
       bn: tx(400, 72, 'ZANCUDO REY', 13, '#ff4d4d'),
       hv: tx(104, 22, '', 11, '#fff', 61),
-      lb: [tx(222, 45, 'B2 OFF', 10, '#7dff9a'), tx(342, 45, 'B3 RAID', 10, '#d8f070'), tx(452, 45, 'B4 BOMBA', 10, '#ff8a8a'), tx(104, 45, 'VIDA', 10, '#3fd36a')],
+      lb: [tx(222, 45, 'B2 OFF', 10, '#7dff9a'), tx(342, 45, 'B3 RAID', 10, '#d8f070'), tx(452, 45, 'B4 BOMBA', 10, '#ff8a8a'), tx(150, 45, 'VIDA', 10, '#3fd36a')],
+      li: [],
       oi: [], bi: [], ai: [], vi: [],
       b5: tx(20, 570, 'B5', 12, '#ffe14d'), b6: tx(130, 570, 'B6', 12, '#4dd8ff'),
       tip: tx(400, 535, 'B1 RAQUETAZO   B2 OFF   B3 RAID   B4 BOMBA   B5 AREPA   B6 VACUNA', 14, '#fff', 62).setBackgroundColor('rgba(0,0,0,.7)').setPadding(10, 6),
@@ -217,7 +219,7 @@ const CABINET_KEYS = {
     };
     S.add.image(18, 22, 'gt').setScale(3).setDepth(60);
     S.add.image(278, 22, 'rd').setScale(3).setDepth(60);
-    for (let i = 0; i < 5; i++) { HUD.oi.push(S.add.image(194 + i * 14, 22, 'of').setScale(2.5).setDepth(60)); HUD.bi.push(S.add.image(420 + i * 16, 22, 'bm').setScale(2.5).setDepth(60)); HUD.ai.push(S.add.image(46 + i * 18, 570, 'ar').setScale(2).setDepth(60)); i < 3 && HUD.vi.push(S.add.image(160 + i * 26, 570, 'vc').setScale(2).setDepth(60)); }
+    for (let i = 0; i < 5; i++) { HUD.oi.push(S.add.image(194 + i * 14, 22, 'of').setScale(2.5).setDepth(60)); HUD.bi.push(S.add.image(420 + i * 16, 22, 'bm').setScale(2.5).setDepth(60)); i < 3 && HUD.li.push(S.add.image(42 + i * 20, 45, 'vd').setScale(2).setDepth(60)); HUD.ai.push(S.add.image(46 + i * 18, 570, 'ar').setScale(2).setDepth(60)); i < 3 && HUD.vi.push(S.add.image(160 + i * 26, 570, 'vc').setScale(2).setDepth(60)); }
     try {
       const c = S.sound.context, f = c.createBiquadFilter();
       bz = c.createOscillator(); bzg = c.createGain(); bz.type = 'sawtooth'; bz.frequency.value = 440; bzg.gain.value = 0;
@@ -273,7 +275,8 @@ const CABINET_KEYS = {
     if (!seen[k] && NM[k]) { seen[k] = 1; msg(NM[k], '#ff8a4d'); tn(330, .3, 'sawtooth', .05, 660); }
     const T = TY[k], s = T.s || 3, o = S.add.image(p[0], p[1], k == 'b' ? 'z' : k).setScale(s).setDepth(T.m % 3 == 1 || T.m == 2 ? 4 : 5);
     if (k == 'b') o.setTint(0xff5050);
-    en.push({ o, k, m: T.m, hp: T.hp, mh: T.hp, v: T.v * (.85 + R() * .3) * (.8 + .5 * Df()), d: T.d, bt: T.bt || 0, pz: T.pz, xp: T.xp, s, w: T.w || 0, f: T.f || 0, ph: R() * 7, kx: 0, ky: 0, sd: 0, fd: 0, od: 0, rd: 0, hd: 0, tm: R(), ds: 0, r: s * 4 });
+    const eh = k == 'b' ? T.hp : T.hp * (1 + Df() * 1.2);
+    en.push({ o, k, m: T.m, hp: eh, mh: eh, v: T.v * (.85 + R() * .3) * (.8 + .5 * Df()), d: T.d, bt: T.bt || 0, pz: T.pz, xp: T.xp, s, w: T.w || 0, f: T.f || 0, ph: R() * 7, kx: 0, ky: 0, sd: 0, fd: 0, od: 0, rd: 0, hd: 0, tm: R(), ds: 0, r: s * 4 });
   };
   const pick = () => {
     const r = R();
@@ -282,7 +285,7 @@ const CABINET_KEYS = {
 
   const hit = (e, n, kb) => {
     if (e.dead) return;
-    e.hp -= n; e.o.setTintFill(0xffffff);
+    e.hp -= n * (1 + (lvl - 1) * .2); e.o.setTintFill(0xffffff);
     S.time.delayedCall(60, () => e.dead || (e.k == 'b' ? e.o.setTint(0xff5050) : e.o.clearTint()));
     if (kb) { const dx = e.o.x - P.x, dy = e.o.y - P.y, d = M.hypot(dx, dy) || 1; e.kx = dx / d * kb; e.ky = dy / d * kb; }
     if (e.hp <= 0) die(e);
@@ -291,7 +294,7 @@ const CABINET_KEYS = {
     e.dead = 1; kills++; xp += e.xp;
     const x = e.o.x, y = e.o.y; e.o.destroy();
     if (sp < 120) { sp++; const s = S.add.image(x, y, 'sp').setDepth(1).setScale(2 + R() * 2).setAlpha(.8); S.tweens.add({ targets: s, alpha: 0, delay: 3e3, duration: 1500, onComplete: () => { s.destroy(); sp--; } }); }
-    if (e.k == 'b') { msg('¡CAYÓ EL ZANCUDO REY!', '#7dff9a'); drop('ar', x - 20, y); drop('rd', x + 20, y); drop('bm', x, y + 20); drop('vc', x, y - 20); }
+    if (e.k == 'b') { msg('¡CAYÓ EL ZANCUDO REY!', '#7dff9a'); drop('ar', x - 20, y); drop('rd', x + 20, y); drop('bm', x, y + 20); drop('vc', x, y - 20); drop('vd', x, y); }
     else { const r = R(); r < .015 ? drop('ar', x, y) : r < .025 ? drop('of', x, y) : r < .037 ? drop('rd', x, y) : r < .04 ? drop('bm', x, y) : r < .052 && drop('vc', x, y); }
     if (t - ls > .04) { ls = t; tn(900 + R() * 500, .07, 'square', .03, 200); }
   };
@@ -310,18 +313,18 @@ const CABINET_KEYS = {
   }
   function bomb() {
     bom--;
-    const x = M.max(60, M.min(740, P.x + M.cos(P.a) * 150)), y = M.max(90, M.min(560, P.y + M.sin(P.a) * 150));
-    const c = S.add.image(P.x, P.y, 'bm').setScale(3).setDepth(9);
-    tn(600, .45, 'sine', .04, 1200);
-    S.tweens.add({ targets: c, scale: 5, yoyo: true, duration: 225 });
-    S.tweens.add({ targets: c, x, y, angle: 540, duration: 450, onComplete: () => {
-      c.destroy(); S.cameras.main.shake(400, .02); nz(1, .3, 500); tn(110, .7, 'sine', .25, 30);
+    const c = S.add.image(P.x, P.y - 160, 'bm').setScale(6).setDepth(9);
+    tn(1200, .5, 'sine', .04, 300);
+    S.tweens.add({ targets: c, y: P.y, scale: 3, angle: 360, duration: 500, ease: 'Quad.easeIn', onUpdate: () => c.x = P.x, onComplete: () => {
+      const x = P.x, y = P.y;
+      c.destroy(); S.cameras.main.shake(450, .025); S.cameras.main.flash(150, 216, 240, 112); nz(1, .3, 500); tn(110, .7, 'sine', .25, 30);
       const cl = S.add.circle(x, y, 30, 0xd8f070, .65).setDepth(9);
-      S.tweens.add({ targets: cl, scale: 9, alpha: 0, duration: 900, onComplete: () => cl.destroy() });
+      S.tweens.add({ targets: cl, scale: 10, alpha: 0, duration: 900, onComplete: () => cl.destroy() });
       msg('¡BOMBA RAID!\nMATA BICHOS MUERTOS', '#d8f070');
-      for (const e of en) if (M.hypot(e.o.x - x, e.o.y - y) < 270) hit(e, e.k == 'b' ? 25 : 99, 0);
+      for (const e of en) { const d = M.hypot(e.o.x - x, e.o.y - y); if (d < 290) hit(e, e.k == 'b' ? 25 : 99, 0); else if (d < 480) hit(e, 0, 500); }
     } });
   }
+
 
   // ---- Subir de nivel ----
   const UP = [
@@ -340,9 +343,11 @@ const CABINET_KEYS = {
   ];
   function lvUp() {
     st = 2; lvl++; xp -= xpN; xpN = M.floor(xpN * 1.45 + 5); cs = 1; pT = S.time.now + 450;
+    const x1 = lvl % 4 == 0 && lv < 3; x1 && lv++;
     try { bzg.gain.value = 0; } catch (e) {}
+    MS.forEach(o => o && o.setAlpha(0));
     ch = Phaser.Utils.Array.Shuffle(UP.filter(u => !u[3] || u[3]())).slice(0, 3);
-    cards = [S.add.rectangle(400, 300, 800, 600, 0x000000, .7).setDepth(70), tx(400, 150, '¡NIVEL ' + lvl + '! ELIGE UNA MEJORA', 28, '#ffe14d', 71)];
+    cards = [S.add.rectangle(400, 300, 800, 600, 0x000000, .7).setDepth(70), tx(400, 140, '¡NIVEL ' + lvl + '!  +20% DAÑO' + (x1 ? '  +1 VIDA' : '') + '\nELIGE UNA MEJORA', 28, '#ffe14d', 71)];
     ch.forEach((u, i) => {
       const x = 150 + i * 250;
       cards.push(S.add.rectangle(x, 320, 220, 200, 0x22263a).setDepth(71).setStrokeStyle(4, 0x555555), tx(x, 275, u[0], 20, '#ffe14d', 72), tx(x, 355, u[1], 16, '#fff', 72));
@@ -402,7 +407,7 @@ const CABINET_KEYS = {
     }
     if (btn(4)) { if (bom > 0) bomb(); else pop(P.x, P.y - 40, 'sin BOMBA', '#f88'); }
     rk.setVisible(!spr); cn.setVisible(spr).setPosition(hx, hy).setRotation(P.a + PI / 2);
-    if (spr) { gas = M.max(0, gas - 30 * dt); if (t > sS) { sS = t + .1; nz(.14, .05, 4500); } }
+    if (spr) { gas = M.max(0, gas - 22 * dt); if (t > sS) { sS = t + .1; nz(.14, .05, 4500); } }
 
     // Oleadas
     if (t > nS) { const D = Df(); nS = t + 1.4 - 1.2 * D ** .8; for (let i = 0; i < 1 + (D * 3 | 0); i++) spawn(pick()); }
@@ -430,8 +435,8 @@ const CABINET_KEYS = {
     }
     if (t < P.sw) { G.fillStyle(0x7fd8ff, .22); if (P.full) G.fillCircle(P.x, P.y, P.rr); else { G.slice(P.x, P.y, P.rr, P.a - 1.25, P.a + 1.25); G.fillPath(); } G.lineStyle(3, 0xbff3ff, .8); G.beginPath(); G.arc(P.x, P.y, P.rr, P.full ? 0 : P.a - 1.25, P.full ? 6.3 : P.a + 1.25); G.strokePath(); }
     if (spr) {
-      G.fillStyle(0xd8f070, .12 + R() * .08); G.slice(hx, hy, SPR, P.a - .42, P.a + .42); G.fillPath();
-      for (let i = 0; i < 14; i++) { const r = R() * SPR, a = P.a + (R() - .5) * .84 * r / SPR; G.fillStyle(0xe8f8a0, .25 + R() * .3); G.fillCircle(hx + M.cos(a) * r, hy + M.sin(a) * r, 4 + r / 14); }
+      G.fillStyle(0xd8f070, .12 + R() * .08); G.slice(hx, hy, SPR, P.a - .52, P.a + .52); G.fillPath();
+      for (let i = 0; i < 14; i++) { const r = R() * SPR, a = P.a + (R() - .5) * 1.04 * r / SPR; G.fillStyle(0xe8f8a0, .25 + R() * .3); G.fillCircle(hx + M.cos(a) * r, hy + M.sin(a) * r, 4 + r / 14); }
     }
 
     // Enemigos
@@ -448,7 +453,7 @@ const CABINET_KEYS = {
         if (e.m == 3) v = e.ds ? e.v * 3.2 : d > 140 ? e.v : -e.v * .3;
         const wb = M.sin(t * e.f + e.ph) * e.w;
         o.x += (ux * v - uy * wb) * dt; o.y += (uy * v + ux * wb) * dt;
-        if (d < e.r + 12 && !(P.ic && ['c', 'cv', 'h'].includes(e.k))) {
+        if (d < e.r + 12 && t > inv && !(P.ic && ['c', 'cv', 'h'].includes(e.k))) {
           bite += e.d * dm;
           if (t > e.hd) {
             e.hd = t + 1;
@@ -459,7 +464,7 @@ const CABINET_KEYS = {
       }
       o.x += e.kx * dt; o.y += e.ky * dt; e.kx *= .88; e.ky *= .88;
       if (d < 220) near++;
-      if (spr && t > e.rd) { const ex = o.x - hx, ey = o.y - hy; if (M.hypot(ex, ey) < SPR + e.r && M.abs(Phaser.Math.Angle.Wrap(M.atan2(ey, ex) - P.a)) < .45) { e.rd = t + .2; hit(e, 1, 50); if (e.dead) continue; } }
+      if (spr && t > e.rd) { const ex = o.x - hx, ey = o.y - hy; if (M.hypot(ex, ey) < SPR + e.r && M.abs(Phaser.Math.Angle.Wrap(M.atan2(ey, ex) - P.a)) < .55) { e.rd = t + .12; hit(e, 1, 90); if (e.dead) continue; } }
       if (so && d < SR + e.r && t > e.sd) { e.sd = t + 1.3; hit(e, 1, 0); if (e.dead) continue; }
       for (const b of fb) if (t > e.fd && M.hypot(b[0] - o.x, b[1] - o.y) < 18 + e.r) { e.fd = t + .35; hit(e, 1, 160); }
       if (e.dead) continue;
@@ -473,6 +478,7 @@ const CABINET_KEYS = {
     // Tope de daño por segundo: las nubes asustan pero no te borran de golpe
     bite = M.min(bite, 10 + 30 * Df());
     if (bite) { hp -= bite * dt; hT = t; if (t - ls > .25) { ls = t; tn(180, .12, 'sine', .05, 90); } }
+    pl.setAlpha(t < inv && t * 10 % 2 < 1 ? .3 : 1);
     bite ? pl.setTint(t * 20 % 2 < 1 ? 0xff6666 : 0xffffff) : t < pz ? pl.setTint(0x9dff7d) : sick('vn') ? pl.setTint(0x8888ff) : sick('dg') || sick('ck') || sick('pl') ? pl.setTint(0xffb0e0) : pl.clearTint();
     try { bzg.gain.value = M.min(.03, near * .0012); bz.frequency.value = 430 + M.sin(t * 7) * 20; } catch (e) {}
 
@@ -483,6 +489,7 @@ const CABINET_KEYS = {
         else if (d.k == 'of') { off++; pop(P.x, P.y - 40, '+1 OFF', '#7dff9a'); }
         else if (d.k == 'vc') { vcn = M.min(3, vcn + 1); pop(P.x, P.y - 40, '+1 VACUNA (B6)', '#4dd8ff'); }
         else if (d.k == 'rd') { gas = M.min(gasM, gas + 50); pop(P.x, P.y - 40, '+RAID', '#d8f070'); }
+        else if (d.k == 'vd') { lv < 3 ? (lv++, msg('¡VIDA EXTRA!', '#ff3b6b')) : (hp = hpM); [523, 784, 1047, 1568].forEach((f, i) => S.time.delayedCall(i * 90, () => tn(f, .12))); }
         else { bom++; pop(P.x, P.y - 40, '+1 BOMBA', '#ff8a8a'); }
         tn(660, .08); S.time.delayedCall(80, () => tn(990, .1)); d.o.destroy(); return 0;
       }
@@ -499,17 +506,22 @@ const CABINET_KEYS = {
     HUD.hv.setText(M.ceil(M.max(0, hp)) + '/' + hpM + (rg > 0 ? ' +' : ''));
     // Barra de cuánto Raid le queda al pote
     b.fillStyle(0x333333); b.fillRect(290, 13, 104, 18); b.fillStyle(gas < gasM * .25 ? 0xff8a3d : 0xd8f070); b.fillRect(292, 15, 100 * gas / gasM, 14);
-    HUD.oi.forEach((o, i) => o.setVisible(i < off)); HUD.bi.forEach((o, i) => o.setVisible(i < bom)); HUD.ai.forEach((o, i) => o.setVisible(i < arp)); HUD.vi.forEach((o, i) => o.setVisible(i < vcn));
+    HUD.li.forEach((o, i) => o.setVisible(i < lv)); HUD.oi.forEach((o, i) => o.setVisible(i < off)); HUD.bi.forEach((o, i) => o.setVisible(i < bom)); HUD.ai.forEach((o, i) => o.setVisible(i < arp)); HUD.vi.forEach((o, i) => o.setVisible(i < vcn));
     // Barra del Zancudo Rey
     const bs = en.find(e => e.k == 'b');
     HUD.bn.setVisible(!!bs);
     if (bs) { b.fillStyle(0x000000, .7); b.fillRect(246, 82, 308, 16); b.fillStyle(0xff3030); b.fillRect(250, 85, 300 * M.max(0, bs.hp) / bs.mh, 10); }
     b.fillStyle(0x7dff9a); b.fillRect(0, 590, 800 * M.min(1, xp / xpN), 8);
-    HUD.c.setText(clk()); HUD.k.setText('BICHOS ' + kills); HUD.l.setText('NIVEL ' + lvl); HUD.w.setText('OLEADA ' + ol);
+    HUD.c.setText(clk()); HUD.k.setText('BICHOS ' + kills); HUD.l.setText('NIVEL ' + lvl + ' · DAÑO x' + (1 + (lvl - 1) * .2).toFixed(1)); HUD.w.setText('OLEADA ' + ol);
     HUD.e.setText(Object.keys(sk).filter(sick).map(k => SK[k][3] + ' ' + M.ceil(sk[k] - t)).concat(t < spE ? ['ESPIRAL ' + M.ceil(spE - t)] : []).join('   '));
     HUD.o.setText(off > 5 ? '+' + (off - 5) : ''); HUD.m.setText(bom > 5 ? '+' + (bom - 5) : '');
 
     if (xp >= xpN) lvUp();
+    if (hp <= 0 && lv > 1) {
+      lv--; hp = hpM; rg = 0; pz = 0; sk = {}; inv = t + 3;
+      for (const e of en) if (M.hypot(e.o.x - P.x, e.o.y - P.y) < 260) hit(e, 0, 700);
+      S.cameras.main.flash(300, 255, 60, 100); msg('¡PERDISTE UNA VIDA!\nte ' + (lv > 1 ? 'quedan ' + lv : 'queda 1'), '#ff3b6b'); tn(500, .6, 'square', .06, 120);
+    }
     if (hp <= 0) end(0); else if (t >= NIGHT) end(1);
   }
 
