@@ -361,8 +361,8 @@ const CABINET_KEYS = {
     if (!seen[k] && NM[k]) { seen[k] = 1; msg(NM[k], '#ff8a4d'); tn(330, .3, 'sawtooth', .05, 660); }
     const T = TY[k], s = T.s || 3, o = S.add.image(p[0], p[1], k == 'b' ? ['z', 's', 'cg'][mp] : k).setScale(s).setDepth(T.m % 3 == 1 || T.m == 2 ? 4 : 5);
     if (k == 'b') o.setTint(0xff5050);
-    const eh = k == 'b' ? T.hp : T.hp * (1 + Df() * 1.2);
-    en.push({ o, k, m: T.m, hp: eh, mh: eh, v: T.v * (.85 + R() * .3) * (.8 + .5 * Df()), d: T.d, bt: T.bt || 0, pz: T.pz, xp: T.xp, s, w: T.w || 0, f: T.f || 0, ph: R() * 7, kx: 0, ky: 0, sd: 0, fd: 0, od: 0, rd: 0, hd: 0, tm: R(), ds: 0, r: s * 4 });
+    const eh = k == 'b' ? T.hp : T.hp * (1 + Df() * 1.5);
+    en.push({ o, k, m: T.m, hp: eh, mh: eh, v: T.v * (.85 + R() * .3) * (.85 + .55 * Df()), d: T.d, bt: T.bt || 0, pz: T.pz, xp: T.xp, s, w: T.w || 0, f: T.f || 0, ph: R() * 7, kx: 0, ky: 0, sd: 0, fd: 0, od: 0, rd: 0, hd: 0, tm: R(), ds: 0, r: s * 4 });
   };
   const pick = () => {
     const r = R();
@@ -596,7 +596,7 @@ const CABINET_KEYS = {
     if (spr) { gas = M.max(0, gas - 22 * dt); if (t > sS) { sS = t + .1; nz(.14, .05, 4500); } }
 
     // Oleadas
-    if (t > nS) { const D = Df(); nS = t + M.max(.12, 1.4 - 1.2 * D ** .8); for (let i = 0; i < 1 + (D * 3 | 0); i++) spawn(pick()); }
+    if (t > nS) { const D = Df(); nS = t + M.max(.1, 1.2 - 1.05 * D ** .8); for (let i = 0; i < 1 + (D * 3 | 0); i++) spawn(pick()); }
     if (t > nW) { nW = t + 38; const sd = R() * 4 | 0, n = 10 + (Df() * 45 | 0); for (let i = 0; i < n; i++) spawn(R() < .7 ? 'z' : 'a', edge(sd, .5)); ol++; msg('¡OLEADA ' + ol + '!\nviene una nube de zancudos · B2 = OFF', '#ff8a4d'); tn(220, .6, 'sawtooth', .05, 440); }
     if (t > nH) {
       nH = t + 45; const sd = R() * 4 | 0, p = edge(sd, .3), n = 8 + (Df() * 16 | 0);
@@ -636,7 +636,7 @@ const CABINET_KEYS = {
 
     // Enemigos
     let bite = 0, near = 0;
-    const dm = .5 + Df();
+    const dm = .7 + Df() * 1.1;
     for (const e of en) {
       if (e.dead) continue;
       const o = e.o, pd = M.hypot(P.x - o.x, P.y - o.y), tg = Q && M.hypot(Q.x - o.x, Q.y - o.y) < pd && !(offOn && pd < OR) && !(so && pd < SR + e.r) ? Q : P, dx = tg.x - o.x, dy = tg.y - o.y, d = M.hypot(dx, dy) || 1, ux = dx / d, uy = dy / d;
@@ -671,7 +671,7 @@ const CABINET_KEYS = {
     if (t < pz) hp -= 4 * dt;
     GV.setVisible(t < pz).setAlpha(.2 + .06 * M.sin(t * 6));
     // Tope de daño por segundo: las nubes asustan pero no te borran de golpe
-    bite = M.min(bite, 10 + 30 * Df());
+    bite = M.min(bite, 14 + 36 * Df());
     if (bite) { hp -= bite * dt; hT = t; if (t - ls > .25) { ls = t; tn(180, .12, 'sine', .05, 90); } }
     pl.setAlpha(t < inv && t * 10 % 2 < 1 ? .3 : 1);
     bite ? pl.setTint(t * 20 % 2 < 1 ? 0xff6666 : 0xffffff) : t < pz ? pl.setTint(0x9dff7d) : sick('vn') ? pl.setTint(0x8888ff) : sick('dg') || sick('ck') || sick('pl') ? pl.setTint(0xffb0e0) : pl.clearTint();
