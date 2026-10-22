@@ -640,7 +640,7 @@ const CABINET_KEYS = {
     for (const e of en) {
       if (e.dead) continue;
       const o = e.o, pd = M.hypot(P.x - o.x, P.y - o.y), tg = Q && M.hypot(Q.x - o.x, Q.y - o.y) < pd && !(offOn && pd < OR) && !(so && pd < SR + e.r) ? Q : P, dx = tg.x - o.x, dy = tg.y - o.y, d = M.hypot(dx, dy) || 1, ux = dx / d, uy = dy / d;
-      if (offOn && d < OR) { o.x -= ux * 280 * dt; o.y -= uy * 280 * dt; if (t > e.od) { e.od = t + .5; hit(e, 1, 0); if (e.dead) continue; } }
+      if (offOn && pd < OR) { const k = 280 * dt / (pd || 1); o.x -= (P.x - o.x) * k; o.y -= (P.y - o.y) * k; if (t > e.od) { e.od = t + .5; hit(e, 1, 0); if (e.dead) continue; } }
       else {
         let v = e.v;
         if (e.m > 1) { e.tm -= dt; if (e.tm < 0) { e.ds = !e.ds; e.tm = e.ds ? (e.m == 2 ? .22 : .45) : (e.m == 2 ? .9 : 1.4) + R() * .6; } }
@@ -660,7 +660,7 @@ const CABINET_KEYS = {
       o.x += e.kx * dt; o.y += e.ky * dt; e.kx *= .88; e.ky *= .88;
       if (d < 220) near++;
       if (spr && t > e.rd) { const ex = o.x - hx, ey = o.y - hy; if (M.hypot(ex, ey) < SPR + e.r && M.abs(Phaser.Math.Angle.Wrap(M.atan2(ey, ex) - P.a)) < .55) { e.rd = t + .12; hit(e, 1, 90); if (e.dead) continue; } }
-      if (so && d < SR + e.r && t > e.sd) { e.sd = t + 1.3; hit(e, 1, 0); if (e.dead) continue; }
+      if (so && pd < SR + e.r && t > e.sd) { e.sd = t + 1.3; hit(e, 1, 0); if (e.dead) continue; }
       for (const b of fb) if (t > e.fd && M.hypot(b[0] - o.x, b[1] - o.y) < 18 + e.r) { e.fd = t + .35; hit(e, 1, 160); }
       if (e.dead) continue;
       if (e.m == 1 || e.m == 2) { o.rotation = M.atan2(uy, ux) + PI / 2; if (e.m == 2) o.scaleX = e.s * (1 + (e.ds ? .25 : .05) * M.sin(t * 50)); }
