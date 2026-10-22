@@ -1,5 +1,5 @@
 {
   "game_name": "Zancudo Survivors",
   "description": "Te perdiste en el Ávila de noche y solo tienes una raqueta: sobrevive oleadas de zancudos, arañas, avispas y escorpiones hasta el amanecer, con OFF, Raid, arepas y vacunas. Elige personaje y cuidado con el dengue.",
-  "player_mode": "single_player"
+  "player_mode": "two_player"
 }
