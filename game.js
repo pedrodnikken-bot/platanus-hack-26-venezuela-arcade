@@ -30,8 +30,8 @@ const CABINET_KEYS = {
   // ---- Estado ----
   // P jugador: x,y · a mirada · sp velocidad · cd/cdM enfriamiento · rr alcance · dm daño · full 360 · sw fin del swing
   // enemigo: o sprite · k tipo · m modo (0 vuela, 1 camina, 2 salta, 3 se lanza) · hp · v vel · d daño/s · bt picada · tm/ds ciclo de salto
-  let S, G, st, t, P, pl, rk, cn, en, dr, hp, hpM, off, gas, gasM, bom, offE, pz, sk, vac, spE, hT, arp, vcn, GV, rg, xp, xpN, lvl, kills, fans, spi, nS, nW, nB, nD, nH, dk, dark, dkE, seen, sS;
-  let HUD, cards, ch, cs, pT, et, top = [], bz, bzg, ls, sp, deco, MN, mi;
+  let S, G, st, t, P, pl, rk, cn, en, dr, hp, hpM, off, gas, gasM, bom, offE, pz, sk, vac, spE, hT, arp, vcn, GV, rg, xp, xpN, lvl, kills, fans, spi, nS, nW, nB, nD, nH, dk, dark, dkE, seen, sS, ol;
+  let HUD, cards, ch, cs, pT, et, top = [], bz, bzg, ls, sp, deco, MN, mi, ci = 0, CC;
 
   const tx = (x, y, s, z, c = '#fff', d = 60) => S.add.text(x, y, s, { fontFamily: F, fontSize: z + 'px', color: c, fontStyle: 'bold', align: 'center', stroke: '#000', strokeThickness: M.max(2, z / 6) }).setOrigin(.5).setDepth(d);
   const tn = (f, d, ty = 'square', v = .05, f2) => { try { const c = S.sound.context, o = c.createOscillator(), g = c.createGain(), n = c.currentTime; o.type = ty; o.frequency.setValueAtTime(f, n); f2 && o.frequency.exponentialRampToValueAtTime(f2, n + d); g.gain.setValueAtTime(v, n); g.gain.exponentialRampToValueAtTime(.001, n + d); o.connect(g).connect(c.destination); o.start(n); o.stop(n + d); } catch (e) {} };
@@ -54,8 +54,8 @@ const CABINET_KEYS = {
     g.generateTexture(k, rows[0].length * s, rows.length * s); g.destroy();
   };
   function textures() {
-    px('pl', ['...hhhh...', '..hhhhhh..', '..hsssshh.', '..sesses..', '..ssssss..', '...smms...', '..tttttt..', '.sttwwtts.', '.stttttts.', '..tttttt..', '..pppppp..', '..pp..pp..', '..ss..ss..', '.cc....cc.'],
-      { h: 0x2b1a10, s: 0xc98b5e, e: 0x111111, m: 0x7a3a2a, t: 0x7b1e2b, w: 0xffd400, p: 0x1d4ed8, c: 0x22c55e });
+    CH.forEach((c, i) => px('pl' + i, ['...hhhh...', '..hhhhhh..', '..hsssshh.', '..sesses..', '..ssssss..', '...smms...', '..tttttt..', '.sttwwtts.', '.stttttts.', '..tttttt..', '..pppppp..', '..pp..pp..', '..ss..ss..', '.cc....cc.'],
+      { h: 0x2b1a10, s: 0xc98b5e, e: 0x111111, m: 0x7a3a2a, t: 0x7b1e2b, w: 0xffd400, p: 0x1d4ed8, c: 0x22c55e, ...c[2] }));
     px('rk', ['.yyyyy.', 'yb.b.by', 'y.b.b.y', 'yb.b.by', 'y.b.b.y', 'yb.b.by', '.yyyyy.', '...y...', '...g...', '...g...', '...g...', '...g...'],
       { y: 0xffd400, b: 0x6fc8ff, g: 0x333333 });
     px('z', ['.w.....w.', 'www...www', '.wwwbwww.', '...bbb...', 'r.bbbbb..', '.b.b.b.b.', 'b.......b'], { w: 0xcfe8ff, b: 0x2a2a2a, r: 0x8a1010 });
@@ -79,7 +79,7 @@ const CABINET_KEYS = {
     px('sp', ['.rr.', 'rrrr', '.rr.'], { r: 0x8a1010 });
     if (!S.textures.exists('dk')) {
       const c = S.textures.createCanvas('dk', 1600, 1200), x = c.getContext();
-      x.fillStyle = 'rgba(2,3,12,.96)'; x.fillRect(0, 0, 1600, 1200);
+      x.fillStyle = 'rgba(196,204,214,.94)'; x.fillRect(0, 0, 1600, 1200);
       x.globalCompositeOperation = 'destination-out';
       const g = x.createRadialGradient(800, 600, 40, 800, 600, 150);
       g.addColorStop(0, 'rgba(0,0,0,1)'); g.addColorStop(1, 'rgba(0,0,0,0)');
@@ -87,30 +87,65 @@ const CABINET_KEYS = {
     }
   }
 
-  // Cuarto caraqueño visto desde arriba: piso de granito, cama, mesita, ventilador de pie
-  function room() {
-    const g = S.add.graphics().setDepth(0);
-    for (let y = 0; y < 15; y++) for (let x = 0; x < 20; x++) { g.fillStyle((x + y) % 2 ? 0x3b302a : 0x443830); g.fillRect(x * 40, y * 40, 40, 40); }
-    g.fillStyle(0x000000, .18); for (let i = 0; i < 260; i++) g.fillRect(R() * 800, R() * 600, 2, 2);
-    g.fillStyle(0x5a3b24); g.fillRect(20, 60, 170, 190);
-    g.fillStyle(0xe8e0d0); g.fillRect(28, 68, 154, 50);
-    g.fillStyle(0x2f5fa8); g.fillRect(28, 120, 154, 122);
-    g.fillStyle(0x3b74c9); for (let i = 0; i < 6; i++) g.fillRect(28, 128 + i * 20, 154, 8);
-    g.fillStyle(0x5a3b24); g.fillRect(200, 66, 50, 50); g.fillStyle(0xffe9a8); g.fillCircle(225, 91, 12);
-    g.fillStyle(0x7a4a2a, .7); g.fillEllipse(420, 360, 300, 170);
-    g.fillStyle(0x8f5a34, .7); g.fillEllipse(420, 360, 250, 130);
-    g.fillStyle(0x222222); g.fillRect(700, 470, 60, 60); g.fillStyle(0x666666); g.fillCircle(730, 500, 22);
+  // El Ávila de noche visto desde arriba: monte, camino de tierra, quebrada, piedras y árboles
+  function avila() {
+    const g = S.add.graphics().setDepth(0), path = y => 330 + M.sin(y / 90) * 110, crk = y => 700 + M.sin(y / 60) * 25;
+    for (let y = 0; y < 15; y++) for (let x = 0; x < 20; x++) { g.fillStyle((x * 7 + y * 3) % 5 < 2 ? 0x1d3a22 : 0x214228); g.fillRect(x * 40, y * 40, 40, 40); }
+    g.fillStyle(0x2e5a34); for (let i = 0; i < 320; i++) g.fillRect(R() * 800, R() * 600, 2, 5);
+    g.fillStyle(0x10240f, .5); for (let i = 0; i < 200; i++) g.fillRect(R() * 800, R() * 600, 3, 3);
+    [[0x5e4630, 34], [0x6f5439, 26]].forEach(([c, r]) => { g.fillStyle(c); for (let y = 620; y > 40; y -= 6) g.fillCircle(path(y), y, r); });
+    g.fillStyle(0x8a6d48); for (let i = 0; i < 90; i++) { const y = 50 + R() * 550; g.fillRect(path(y) + (R() - .5) * 40, y, 3, 3); }
+    g.fillStyle(0x1f4f78); for (let y = 40; y < 620; y += 5) g.fillCircle(crk(y), y, 22);
+    g.fillStyle(0x6fb0e0, .5); for (let i = 0; i < 45; i++) { const y = 50 + R() * 550; g.fillRect(crk(y) + (R() - .5) * 20, y, 8, 2); }
+    [[150, 470], [560, 150], [480, 530], [90, 250], [610, 400]].forEach(([x, y]) => { g.fillStyle(0x4a4a50); g.fillEllipse(x, y, 34, 22); g.fillStyle(0x6a6a72); g.fillEllipse(x - 4, y - 4, 22, 12); });
+    [[60, 110], [200, 95], [110, 370], [40, 545], [240, 560], [520, 85], [600, 270], [570, 560], [785, 120], [790, 480], [40, 300]].forEach(([x, y]) => {
+      g.fillStyle(0x000000, .35); g.fillEllipse(x + 8, y + 10, 70, 50);
+      g.fillStyle(0x0f2a14); g.fillCircle(x, y, 34); g.fillStyle(0x1c4a24); g.fillCircle(x - 5, y - 5, 25); g.fillStyle(0x2f6b36); g.fillCircle(x - 10, y - 10, 11);
+    });
+    g.fillStyle(0x4a2f17); g.fillRect(468, 478, 6, 34); g.fillStyle(0x6b4423); g.fillRect(420, 452, 102, 30);
+    tx(471, 467, 'PARQUE NACIONAL\nEL ÁVILA', 9, '#f2d9a0', 1).setStroke('#000', 0);
   }
 
   new Phaser.Game({ type: Phaser.AUTO, width: 800, height: 600, parent: 'game-root', backgroundColor: '#15171d', pixelArt: true, scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH }, scene: { create, update } });
 
   function create() {
     S = this; st = 0; t = 0; mi = 0;
-    textures(); room();
+    textures(); avila();
     try { window.platanusArcadeStorage.get('zs-top').then(r => { if (r && r.found && Array.isArray(r.value)) top = r.value.filter(n => typeof n == 'number').slice(0, 5); }); } catch (e) {}
     deco = [];
     for (let i = 0; i < 14; i++) deco.push(S.add.image(R() * 800, R() * 600, 'z').setScale(3).setDepth(5));
     menu();
+  }
+
+  // ---- Personajes: [nombre, descripción, colores, ajustes, barras vida/velocidad/raqueta] ----
+  const CH = [
+    ['EL CHAMO', 'Equilibrado.\nBueno para\nempezar', {}, () => {}, [.6, .6, .6]],
+    ['LA ABUELA', '+60 de vida.\nLas arepas\ncuran el doble.\nCamina lento', { h: 0xd8d8d8, t: 0xe86aa8, w: 0xffffff, p: 0xe86aa8 }, () => { hp = hpM = 160; P.sp = 140; P.cdM = .38; P.ah = 60; arp = 3; }, [1, .4, .45]],
+    ['EL MOTORIZADO', 'Pega y corre\nmás rápido.\nMenos vida', { h: 0xd62828, t: 0x222222, w: 0xd62828, p: 0x333333 }, () => { hp = hpM = 70; P.sp = 215; P.cdM = .22; }, [.35, 1, 1]],
+    ['EL FUMIGADOR', 'Cucarachas y\nbachacos no\nle hacen nada.\nRaid doble', { h: 0xffd400, s: 0x8a8a8a, t: 0xffd400, w: 0x222222, p: 0xffd400 }, () => { P.ic = 1; gas = gasM = 200; bom = 2; }, [.6, .6, .6]],
+    ['LA ENFERMERA', 'Se enferma\nla mitad.\nEmpieza con\n3 vacunas', { t: 0xf4f4f4, w: 0xd62828, p: 0xf4f4f4 }, () => { vac = .5; vcn = 3; }, [.6, .6, .6]],
+  ];
+  function chars() {
+    clr(); st = 5; CC = [];
+    const g = S.add.graphics().setDepth(62);
+    MN.push(S.add.rectangle(400, 300, 800, 600, 0x000000, .82).setDepth(55), tx(400, 60, 'ELIGE TU PERSONAJE', 34, '#ffe14d'), g);
+    CH.forEach((c, i) => {
+      const x = 88 + i * 156, im = S.add.image(x, 180, 'pl' + i).setScale(5).setDepth(61);
+      CC.push([S.add.rectangle(x, 315, 146, 380, 0x22263a).setDepth(60).setStrokeStyle(3, 0x555555), im]);
+      MN.push(CC[i][0], im, tx(x, 250, c[0], 14, '#ffe14d', 61), tx(x, 318, c[1], 12, '#fff', 61));
+      ['VIDA', 'VEL', 'RAQ'].forEach((l, j) => {
+        const y = 400 + j * 26;
+        MN.push(tx(x - 46, y, l, 10, '#aaa', 61));
+        g.fillStyle(0x333333); g.fillRect(x - 28, y - 5, 84, 10); g.fillStyle([0x3fd36a, 0x4dd8ff, 0xffd400][j]); g.fillRect(x - 28, y - 5, 84 * c[4][j], 10);
+      });
+    });
+    MN.push(tx(400, 548, '◀ ▶ elegir    BOTÓN 1 jugar    BOTÓN 2 volver', 15, '#aaa'));
+  }
+  function charsUp(time) {
+    if (J.P1_L) { ci = (ci + 4) % 5; tn(500, .05); }
+    if (J.P1_R) { ci = (ci + 1) % 5; tn(500, .05); }
+    CC.forEach((c, i) => { c[0].setStrokeStyle(4, i == ci ? 0xffe14d : 0x444444); c[1].y = 180 + (i == ci ? M.sin(time / 120) * 6 : 0); });
+    if (J.START1 || btn(1)) { tn(784, .1); start(); } else if (btn(2)) { tn(400, .05); menu(); }
   }
 
   // ---- Menú de inicio ----
@@ -119,7 +154,7 @@ const CABINET_KEYS = {
   function menu() {
     clr(); st = 0;
     MN.push(S.add.rectangle(400, 300, 800, 600, 0x000000, .55).setDepth(55), tx(400, 115, 'ZANCUDO', 84, '#ffe14d'), tx(400, 190, 'SURVIVORS', 56, '#ff4d4d'),
-      tx(400, 245, 'Sobrevive una noche de bichos en Caracas', 18, '#cfe8ff'));
+      tx(400, 245, 'Te perdiste en el Ávila. Sobrevive hasta el amanecer', 18, '#cfe8ff'));
     MI.forEach((s, i) => MN.push(tx(400, 330 + i * 55, s, 30, '#fff')));
     MN.push(S.add.image(0, 0, 'rk').setScale(3).setDepth(61).setAngle(70), tx(400, 545, '▲▼ elegir    BOTÓN 1 / START aceptar', 15, '#aaa'));
     S.tweens.add({ targets: MN[7], scale: 3.4, yoyo: true, repeat: -1, duration: 300 });
@@ -129,9 +164,9 @@ const CABINET_KEYS = {
     if (J.P1_D) { mi = (mi + 1) % 3; tn(500, .05); }
     MI.forEach((s, i) => MN[4 + i].setColor(i == mi ? '#ffe14d' : '#888').setScale(i == mi ? 1.1 : 1));
     MN[7].setPosition(400 - MN[4 + mi].width * .55 - 30, 330 + mi * 55);
-    if (J.START1 || btn(1)) { tn(784, .1); mi == 0 ? start() : mi == 1 ? help() : recs(); }
+    if (J.START1 || btn(1)) { tn(784, .1); mi == 0 ? chars() : mi == 1 ? help() : recs(); }
   }
-  const BE = [['z', 'Zancudo'], ['a', 'Patas blancas'], ['f', 'Mosca'], ['h', 'Bachaco'], ['c', 'Cucaracha'], ['cv', 'Cucaracha voladora'], ['s', 'Araña: salta'], ['v', 'Avispa: se lanza'], ['x', 'Escorpión: veneno'], ['z', 'ZANCUDO REY']];
+  const BE = [['z', 'Zancudo: paludismo'], ['a', 'Patas blancas: dengue'], ['f', 'Mosca'], ['h', 'Bachaco: en fila'], ['c', 'Cucaracha: controles al revés'], ['cv', 'Cucaracha voladora: igual'], ['s', 'Araña: te paraliza'], ['v', 'Avispa: te hincha'], ['x', 'Escorpión: veneno, lento'], ['z', 'ZANCUDO REY: dengue']];
   function help() {
     clr(); st = 4;
     MN.push(S.add.rectangle(400, 300, 800, 600, 0x000000, .85).setDepth(55), tx(400, 50, 'CÓMO JUGAR', 34, '#ffe14d'),
@@ -153,10 +188,11 @@ const CABINET_KEYS = {
 
   function start() {
     clr(); deco.forEach(o => o.destroy());
-    st = 1; t = 0; en = []; dr = []; MS = []; kills = 0; xp = 0; xpN = 12; lvl = 1; fans = 0; spi = 0; sp = 0; ls = 0; sS = 0; seen = { z: 1 };
+    st = 1; t = 0; en = []; dr = []; MS = []; kills = 0; xp = 0; xpN = 12; lvl = 1; fans = 0; spi = 0; sp = 0; ls = 0; sS = 0; seen = { z: 1 }; ol = 1;
     hp = hpM = 100; off = 2; gas = gasM = 100; bom = 1; offE = -1; pz = 0; sk = {}; vac = 1; spE = 0; hT = -1; arp = 1; vcn = 1; rg = 0; nS = 0; nW = 40; nB = 120; nD = 55; nH = 90; dark = 0; dkE = 0;
     P = { x: 400, y: 330, a: 0, sp: 170, cd: 0, cdM: .32, rr: 62, dm: 1, full: 0, sw: 0 };
-    pl = S.add.image(P.x, P.y, 'pl').setScale(3).setDepth(6);
+    P.ah = 30; P.ic = 0; CH[ci][3]();
+    pl = S.add.image(P.x, P.y, 'pl' + ci).setScale(3).setDepth(6);
     rk = S.add.image(P.x, P.y, 'rk').setScale(3).setDepth(7).setOrigin(.5, 1);
     cn = S.add.image(P.x, P.y, 'rd').setScale(3).setDepth(7).setVisible(false);
     G = S.add.graphics().setDepth(8);
@@ -166,6 +202,7 @@ const CABINET_KEYS = {
       b: S.add.graphics().setDepth(59),
       c: tx(600, 22, '', 24, '#ffe14d'),
       k: tx(730, 22, '', 16, '#fff'),
+      w: tx(735, 570, '', 14, '#ff8a4d'),
       l: tx(400, 574, '', 14, '#fff'),
       o: tx(262, 22, '', 13, '#7dff9a').setOrigin(0, .5),
       m: tx(498, 22, '', 13, '#ff8a8a').setOrigin(0, .5),
@@ -188,6 +225,8 @@ const CABINET_KEYS = {
     } catch (e) {}
     tn(523, .1); S.time.delayedCall(100, () => tn(784, .15));
     S.tweens.add({ targets: HUD.tip, alpha: 0, delay: 7e3, duration: 800 });
+    const st0 = tx(400, 190, 'TE PERDISTE EN EL ÁVILA\n\nAquí tienes una raqueta.\nSobrevive a los bichos\nhasta que amanezca.', 22, '#fff', 66).setBackgroundColor('rgba(0,0,0,.75)').setPadding(24, 14);
+    S.tweens.add({ targets: st0, alpha: 0, delay: 4500, duration: 700, onComplete: () => st0.destroy() });
   }
 
   // ---- Enemigos ----
@@ -210,10 +249,10 @@ const CABINET_KEYS = {
     pl: ['¡PALUDISMO!', 'escalofríos: tiemblas', 10, 'PALUDISMO'],
     vn: ['¡VIUDA NEGRA!', 'quedas paralizado', 1.5, 'PARALIZADO'],
     hn: ['¡TE HINCHASTE!', 'picada de avispa: lento', 8, 'HINCHADO'],
-    as: ['¡TE CAMINÓ UNA CUCARACHA!', 'controles al revés', 4, 'QUÉ ASCO'],
+    as: ['¡TE CAMINÓ UNA CUCARACHA!', 'controles al revés', 5, 'QUÉ ASCO'],
   };
   // Qué puede pegar cada bicho al picarte: [enfermedades posibles, probabilidad por picada]
-  const IN = { a: [['dg', 'ck'], .08], z: [['pl'], .03], s: [['vn'], .12], v: [['hn'], .5], c: [['as'], .25], cv: [['as'], .25], b: [['dg'], .5] };
+  const IN = { a: [['dg', 'ck'], .08], z: [['pl'], .03], s: [['vn'], .12], v: [['hn'], .5], c: [['as'], .4], cv: [['as'], .4], b: [['dg'], .5] };
   const sick = k => sk[k] > t;
   // Dificultad progresiva: 0 al empezar la noche, 1 al amanecer
   const Df = () => M.min(1, t / NIGHT);
@@ -290,7 +329,7 @@ const CABINET_KEYS = {
     ['MUÑECA LOCA', 'Raquetazos\nmás rápidos', () => P.cdM *= .82, () => P.cdM > .14],
     ['RAQUETA\nRECARGADA', '+1 de daño\neléctrico', () => P.dm++, () => P.dm < 4],
     ['CHANCLETAS', 'Corres más\nrápido', () => P.sp *= 1.1, () => P.sp < 280],
-    ['VENTILADOR', 'Un aspa gira\na tu alrededor\n(si hay luz)', () => fans++, () => fans < 4],
+    ['LIBÉLULA', 'Gira a tu\nalrededor\ncomiendo bichos', () => fans++, () => fans < 4],
     ['ESPIRAL', 'Humo que quema\nbichos cerca\n(dura 30 s)', () => { spi = M.min(4, spi + 1); spE = t + 30; }, () => t > spE],
     ['MALTA Y\nTEQUEÑOS', '+20 sangre\nmáxima y te cura', () => { hpM += 20; hp = hpM; }],
     ['OFF EXTRA', '+2 OFF', () => off += 2],
@@ -328,7 +367,7 @@ const CABINET_KEYS = {
     dk.setVisible(false);
     S.add.rectangle(400, 300, 800, 600, w ? 0x3a2a00 : 0x2a0000, .8).setDepth(80);
     tx(400, 160, w ? '¡AMANECIÓ!' : '¡TE COMIERON\nLOS BICHOS!', 52, w ? '#ffe14d' : '#ff4d4d', 81);
-    tx(400, 320, 'Bichos: ' + kills + '   Hora: ' + clk() + '\nNivel: ' + lvl + '   Puntos: ' + sc, 22, '#fff', 81);
+    tx(400, 320, CH[ci][0] + '\nBichos: ' + kills + '   Hora: ' + clk() + '\nNivel: ' + lvl + '   Oleada: ' + ol + '   Puntos: ' + sc, 22, '#fff', 81);
     tx(400, 410, nb ? '¡NUEVO RÉCORD!' : 'Récord: ' + top[0], 24, nb ? '#7dff9a' : '#aaa', 81);
     const p = tx(400, 500, 'START para volver al menú', 22, '#ffe14d', 81);
     S.tweens.add({ targets: p, alpha: .2, yoyo: true, repeat: -1, duration: 500 });
@@ -355,7 +394,7 @@ const CABINET_KEYS = {
     if (btn(2)) { if (off > 0 && t > offE) { off--; offE = t + 5; nz(.7, .14, 3500); msg('¡OFF! REPELENTE', '#7dff9a'); } else if (!off) pop(P.x, P.y - 40, 'sin OFF', '#f88'); }
     const spr = hold('3') && gas > 0;
     if (J.P1_3 && gas <= 0) pop(P.x, P.y - 40, 'lata vacía', '#f88');
-    if (btn(5)) { if (!arp) pop(P.x, P.y - 40, 'sin arepas', '#f88'); else if (hp >= hpM) pop(P.x, P.y - 40, 'estás lleno', '#aaa'); else { arp--; rg += 30; pop(P.x, P.y - 40, '¡ÑAM! +30', '#ffe14d'); tn(300, .08); S.time.delayedCall(90, () => tn(250, .08)); } }
+    if (btn(5)) { if (!arp) pop(P.x, P.y - 40, 'sin arepas', '#f88'); else if (hp >= hpM) pop(P.x, P.y - 40, 'estás lleno', '#aaa'); else { arp--; rg += P.ah; pop(P.x, P.y - 40, '¡ÑAM! +' + P.ah, '#ffe14d'); tn(300, .08); S.time.delayedCall(90, () => tn(250, .08)); } }
     if (btn(6)) {
       const ill = t < pz || Object.keys(sk).some(sick);
       if (!vcn) pop(P.x, P.y - 40, 'sin vacunas', '#f88'); else if (!ill) pop(P.x, P.y - 40, 'no estás enfermo', '#aaa');
@@ -367,7 +406,7 @@ const CABINET_KEYS = {
 
     // Oleadas
     if (t > nS) { const D = Df(); nS = t + 1.4 - 1.2 * D ** .8; for (let i = 0; i < 1 + (D * 3 | 0); i++) spawn(pick()); }
-    if (t > nW) { nW = t + 38; const sd = R() * 4 | 0, n = 10 + (Df() * 45 | 0); for (let i = 0; i < n; i++) spawn(R() < .7 ? 'z' : 'a', edge(sd, .5)); msg('¡VIENE UNA NUBE DE ZANCUDOS!\nBOTÓN 2 = OFF', '#ff8a4d'); tn(220, .6, 'sawtooth', .05, 440); }
+    if (t > nW) { nW = t + 38; const sd = R() * 4 | 0, n = 10 + (Df() * 45 | 0); for (let i = 0; i < n; i++) spawn(R() < .7 ? 'z' : 'a', edge(sd, .5)); ol++; msg('¡OLEADA ' + ol + '!\nviene una nube de zancudos · B2 = OFF', '#ff8a4d'); tn(220, .6, 'sawtooth', .05, 440); }
     if (t > nH) {
       nH = t + 45; const sd = R() * 4 | 0, p = edge(sd, .3), n = 8 + (Df() * 16 | 0);
       for (let i = 0; i < n; i++) spawn('h', [p[0] + (sd == 1 ? i * 14 : sd == 3 ? -i * 14 : 0), p[1] + (sd == 2 ? i * 14 : sd == 0 ? -i * 14 : 0)]);
@@ -375,19 +414,19 @@ const CABINET_KEYS = {
     }
     if (t > nB) { nB += 120; spawn('b'); msg('¡LLEGÓ EL ZANCUDO REY!', '#ff4d4d'); tn(80, 1, 'sawtooth', .08, 160); }
     // Apagón
-    if (!dark && t > nD) { dark = 1; dkE = t + 13; dk.setVisible(true).setAlpha(0); S.tweens.add({ targets: dk, alpha: 1, duration: 400, ease: 'Bounce' }); msg('¡SE FUE LA LUZ!', '#ff4d4d'); tn(300, .8, 'sawtooth', .07, 40); }
-    if (dark) { dk.setPosition(P.x, P.y); if (t > dkE) { dark = 0; nD = t + 35 + R() * 20; S.tweens.add({ targets: dk, alpha: 0, duration: 300, onComplete: () => dk.setVisible(false) }); msg('¡VOLVIÓ LA LUZ!', '#ffe14d'); tn(400, .3, 'square', .05, 900); } }
+    if (!dark && t > nD) { dark = 1; dkE = t + 13; dk.setVisible(true).setAlpha(0); S.tweens.add({ targets: dk, alpha: 1, duration: 400, ease: 'Bounce' }); msg('¡LLEGÓ LA NEBLINA!', '#cfe8ff'); tn(300, .8, 'sawtooth', .07, 40); }
+    if (dark) { dk.setPosition(P.x, P.y); if (t > dkE) { dark = 0; nD = t + 35 + R() * 20; S.tweens.add({ targets: dk, alpha: 0, duration: 300, onComplete: () => dk.setVisible(false) }); msg('¡SE FUE LA NEBLINA!', '#ffe14d'); tn(400, .3, 'square', .05, 900); } }
 
     // Dibujo dinámico: OFF, espiral, ventilador, raquetazo, spray
     G.clear();
-    const offOn = t < offE, so = spi && t < spE, SR = 45 + spi * 12, nf = dark ? 0 : fans, fb = [];
+    const offOn = t < offE, so = spi && t < spE, SR = 45 + spi * 12, fb = [];
     if (offOn) { G.fillStyle(0x7dff9a, .1 + .05 * M.sin(t * 10)); G.fillCircle(P.x, P.y, OR); G.lineStyle(2, 0x7dff9a, .5); G.strokeCircle(P.x, P.y, OR); }
     if (so) { G.lineStyle(2, 0xdddddd, .22); G.strokeCircle(P.x, P.y, SR); G.fillStyle(0xdddddd, .35); for (let i = 0; i < 6; i++) G.fillCircle(P.x + M.cos(t * 1.5 + i) * SR, P.y + M.sin(t * 1.5 + i) * SR, 3); }
     for (let i = 0; i < fans; i++) {
-      const a = (dark ? 0 : t * 3.5) + i * PI * 2 / fans, x = P.x + M.cos(a) * 78, y = P.y + M.sin(a) * 78;
-      G.fillStyle(dark ? 0x555555 : 0xbfd7ea); G.fillCircle(x, y, 7);
-      for (let j = 0; j < 3; j++) { const b = (dark ? 0 : t * 25) + j * 2.1; G.fillEllipse(x + M.cos(b) * 9, y + M.sin(b) * 9, 10, 10); }
-      if (i < nf) fb.push([x, y]);
+      const a = t * 3.5 + i * PI * 2 / fans, x = P.x + M.cos(a) * 78, y = P.y + M.sin(a) * 78, b = a + PI / 2, w = 9 + 3 * M.sin(t * 45 + i);
+      G.lineStyle(3, 0xcfefff, .7); [-2, 3].forEach(o => G.lineBetween(x + M.cos(b) * o + M.cos(a) * w, y + M.sin(b) * o + M.sin(a) * w, x + M.cos(b) * o - M.cos(a) * w, y + M.sin(b) * o - M.sin(a) * w));
+      G.lineStyle(4, 0x2fd0c0); G.lineBetween(x - M.cos(b) * 10, y - M.sin(b) * 10, x + M.cos(b) * 6, y + M.sin(b) * 6); G.fillStyle(0x1a8a80); G.fillCircle(x + M.cos(b) * 7, y + M.sin(b) * 7, 3);
+      fb.push([x, y]);
     }
     if (t < P.sw) { G.fillStyle(0x7fd8ff, .22); if (P.full) G.fillCircle(P.x, P.y, P.rr); else { G.slice(P.x, P.y, P.rr, P.a - 1.25, P.a + 1.25); G.fillPath(); } G.lineStyle(3, 0xbff3ff, .8); G.beginPath(); G.arc(P.x, P.y, P.rr, P.full ? 0 : P.a - 1.25, P.full ? 6.3 : P.a + 1.25); G.strokePath(); }
     if (spr) {
@@ -409,7 +448,7 @@ const CABINET_KEYS = {
         if (e.m == 3) v = e.ds ? e.v * 3.2 : d > 140 ? e.v : -e.v * .3;
         const wb = M.sin(t * e.f + e.ph) * e.w;
         o.x += (ux * v - uy * wb) * dt; o.y += (uy * v + ux * wb) * dt;
-        if (d < e.r + 12) {
+        if (d < e.r + 12 && !(P.ic && ['c', 'cv', 'h'].includes(e.k))) {
           bite += e.d * dm;
           if (t > e.hd) {
             e.hd = t + 1;
@@ -454,7 +493,7 @@ const CABINET_KEYS = {
 
     // HUD
     const b = HUD.b; b.clear();
-    b.fillStyle(0x000000, .6); b.fillRect(0, 0, 800, 54); b.fillRect(0, 588, 800, 12);
+    b.fillStyle(0x000000, .85); b.fillRect(0, 0, 800, 54); b.fillRect(0, 588, 800, 12);
     b.fillStyle(0x333333); b.fillRect(32, 12, 144, 20); b.fillStyle(t - hT < .25 ? 0xff2a2a : t < pz ? 0xa04fd8 : rg > 0 && t * 8 % 2 < 1 ? 0xb8ffc8 : 0x3fd36a); b.fillRect(34, 14, 140 * M.max(0, hp) / hpM, 16);
     if (rg > 0) { b.fillStyle(0xb8ffc8, .45); b.fillRect(34 + 140 * hp / hpM, 14, M.min(140 * rg / hpM, 140 - 140 * hp / hpM), 16); }
     HUD.hv.setText(M.ceil(M.max(0, hp)) + '/' + hpM + (rg > 0 ? ' +' : ''));
@@ -466,7 +505,7 @@ const CABINET_KEYS = {
     HUD.bn.setVisible(!!bs);
     if (bs) { b.fillStyle(0x000000, .7); b.fillRect(246, 82, 308, 16); b.fillStyle(0xff3030); b.fillRect(250, 85, 300 * M.max(0, bs.hp) / bs.mh, 10); }
     b.fillStyle(0x7dff9a); b.fillRect(0, 590, 800 * M.min(1, xp / xpN), 8);
-    HUD.c.setText(clk()); HUD.k.setText('BICHOS ' + kills); HUD.l.setText('NIVEL ' + lvl);
+    HUD.c.setText(clk()); HUD.k.setText('BICHOS ' + kills); HUD.l.setText('NIVEL ' + lvl); HUD.w.setText('OLEADA ' + ol);
     HUD.e.setText(Object.keys(sk).filter(sick).map(k => SK[k][3] + ' ' + M.ceil(sk[k] - t)).concat(t < spE ? ['ESPIRAL ' + M.ceil(spE - t)] : []).join('   '));
     HUD.o.setText(off > 5 ? '+' + (off - 5) : ''); HUD.m.setText(bom > 5 ? '+' + (bom - 5) : '');
 
@@ -476,8 +515,9 @@ const CABINET_KEYS = {
 
   function update(time, dl) {
     const dt = M.min(dl, 50) / 1e3;
-    if (st == 0 || st == 4) deco.forEach((o, i) => { o.x += M.cos(time / 700 + i) * 2; o.y += M.sin(time / 500 + i * 2) * 2; o.scaleY = 3 * (1 + .2 * M.sin(time / 20 + i)); });
+    if (st == 0 || st > 3) deco.forEach((o, i) => { o.x += M.cos(time / 700 + i) * 2; o.y += M.sin(time / 500 + i * 2) * 2; o.scaleY = 3 * (1 + .2 * M.sin(time / 20 + i)); });
     if (st == 0) menuUp();
+    else if (st == 5) charsUp(time);
     else if (st == 4) { if (J.START1 || btn(1) || btn(2)) { tn(500, .05); menu(); } }
     else if (st == 1) play(dt);
     else if (st == 2) choose();
