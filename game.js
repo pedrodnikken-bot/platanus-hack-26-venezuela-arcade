@@ -210,7 +210,7 @@ const CABINET_KEYS = {
   }
 
   // ---- Menú de inicio ----
-  const MI = ['JUGAR', '2 JUGADORES', 'CÓMO JUGAR', 'RÉCORDS'];
+  const MI = ['1 JUGADOR', '2 JUGADORES', 'CÓMO JUGAR', 'RÉCORDS'];
   const clr = () => { (MN || []).forEach(o => o.destroy()); MN = []; };
   function menu() {
     clr(); st = 0;
@@ -228,17 +228,39 @@ const CABINET_KEYS = {
     if (J.START1 || btn(1)) { tn(784, .1); mi < 2 ? (co = mi, chars()) : mi == 2 ? help() : recs(); }
   }
   const BE = [['z', 'Zancudo: paludismo'], ['a', 'Patas blancas: dengue'], ['f', 'Mosca'], ['h', 'Bachaco: en fila'], ['c', 'Cucaracha: controles al revés'], ['cv', 'Cucaracha voladora: igual'], ['s', 'Araña: te paraliza'], ['v', 'Avispa: te hincha'], ['x', 'Escorpión: veneno, lento'], ['z', 'ZANCUDO REY: dengue']];
-  function help() {
-    clr(); st = 4;
-    MN.push(S.add.rectangle(400, 300, 800, 600, 0x000000, .85).setDepth(55), tx(400, 50, 'CÓMO JUGAR', 34, '#ffe14d'),
-      tx(205, 290, 'JOYSTICK  moverte\nBOTÓN 1  raquetazo\nBOTÓN 2  OFF (repele la nube)\nBOTÓN 3  spray RAID (mantener)\nBOTÓN 4  bomba RAID\nBOTÓN 5  comer arepa (+vida)\nBOTÓN 6  vacuna (te cura)\n\nTu arma especial se dispara sola\n+1 vida cada 4 niveles\nLlega a las 6:00 AM', 13, '#fff').setLineSpacing(9),
-      tx(590, 100, 'LOS BICHOS', 20, '#ff4d4d'));
-    BE.forEach((b, i) => {
-      const y = 140 + i * 38, im = S.add.image(450, y, b[0]).setScale(i == 9 ? 4 : 2.5).setDepth(61);
-      if (i == 9) im.setTint(0xff5050);
-      MN.push(im, tx(490, y, b[1], 15, '#fff').setOrigin(0, .5));
-    });
-    MN.push(S.add.image(150, 528, 'vc').setScale(3).setDepth(61), tx(430, 528, 'Las picadas enferman: dengue, chikungunya, paludismo...\nGuarda vacunas (botón 6) para curarte.', 14, '#ff6bd6'), tx(400, 500, '2 JUGADORES: P2 se mueve y pega con el botón 1', 13, '#7dff9a'), tx(400, 575, 'BOTÓN 1 volver', 15, '#aaa'));
+  // Cómo jugar: 3 páginas que se pasan con ◀ ▶
+  let pg = 0;
+  function help(n = 0) {
+    clr(); st = 9; pg = (n + 3) % 3;
+    MN.push(S.add.rectangle(400, 300, 800, 600, 0x000000, .88).setDepth(55), tx(400, 45, 'CÓMO JUGAR  ' + (pg + 1) + '/3', 32, '#ffe14d'),
+      tx(400, 570, '◀ ▶ cambiar página     BOTÓN 1 / 2 volver', 15, '#aaa'));
+    if (pg == 0) MN.push(tx(400, 105, 'CÓMO SE JUEGA', 22, '#ff8a4d'), tx(400, 320,
+      'Te perdiste de noche. Sobrevive de 11 PM a 6 AM.\n\n' +
+      'Los bichos llegan en OLEADAS, cada vez más fuertes.\n' +
+      'Pégales con la raqueta: cada bicho te da experiencia.\n' +
+      'Al subir de NIVEL pegas +20% y eliges una MEJORA.\n' +
+      'Mata seguido para hacer RACHA: multiplica tus puntos.\n' +
+      'Tu ARMA ESPECIAL se dispara sola (depende del personaje).\n' +
+      'Empiezas con 1 VIDA y ganas otra cada 4 niveles.\n' +
+      'Cada noche llega un JEFE: mátalo y suelta premios.\n\n' +
+      'Al AMANECER: vete a casa o sigue en modo infinito.', 16, '#fff').setLineSpacing(8));
+    if (pg == 1) {
+      MN.push(tx(400, 105, 'CONTROLES', 22, '#ff8a4d'), tx(230, 300,
+        'JOYSTICK   moverte\n\nBOTÓN 1   raquetazo\nBOTÓN 2   OFF: repele la nube\nBOTÓN 3   spray RAID (mantener)\nBOTÓN 4   bomba RAID: limpia\nBOTÓN 5   comer arepa (+vida)\nBOTÓN 6   vacuna: te cura\n\n2 JUGADORES: el P2 se mueve\ncon su joystick y pega con\nsu botón 1. La vida es de los dos.', 15, '#fff').setLineSpacing(6),
+        tx(610, 160, 'RECOGE', 18, '#7dff9a'));
+      [['ar', 'arepa: B5'], ['of', 'OFF: B2'], ['rd', 'lata: más Raid'], ['bm', 'bomba: B4'], ['vc', 'vacuna: B6'], ['vd', 'vida extra']].forEach((o, i) => {
+        const y = 210 + i * 50; MN.push(S.add.image(540, y, o[0]).setScale(3).setDepth(61), tx(570, y, o[1], 15, '#fff').setOrigin(0, .5));
+      });
+    }
+    if (pg == 2) {
+      MN.push(tx(400, 90, 'LOS BICHOS', 22, '#ff4d4d'));
+      BE.forEach((b, i) => {
+        const y = 130 + i * 37, im = S.add.image(250, y, b[0]).setScale(i == 9 ? 4 : 2.5).setDepth(61);
+        if (i == 9) im.setTint(0xff5050);
+        MN.push(im, tx(290, y, b[1], 15, '#fff').setOrigin(0, .5));
+      });
+      MN.push(tx(400, 520, 'Las picadas enferman. Guarda VACUNAS (botón 6) para curarte.', 14, '#ff6bd6'));
+    }
   }
   function recs() {
     clr(); st = 4;
@@ -705,6 +727,7 @@ const CABINET_KEYS = {
     if (st == 0) menuUp();
     else if (st == 5) charsUp(time);
     else if (st == 6) mapsUp();
+    else if (st == 9) { if (J.P1_L || J.P1_R) { tn(500, .05); help(pg + (J.P1_R ? 1 : -1)); } else if (J.START1 || btn(1) || btn(2)) { tn(500, .05); menu(); } }
     else if (st == 4) { if (J.START1 || btn(1) || btn(2)) { tn(500, .05); menu(); } }
     else if (st == 1) play(dt);
     else if (st == 2) choose();
