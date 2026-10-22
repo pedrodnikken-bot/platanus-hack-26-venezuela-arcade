@@ -714,8 +714,8 @@ const CABINET_KEYS = {
 
     if (hp <= 0 && lv > 1) {
       lv--; hp = hpM; rg = 0; pz = 0; sk = {}; inv = t + 3;
-      // Empuja a los bichos que rodean a cada jugador (P1 y, si hay, P2)
-      for (const e of en) for (const p of Q ? [P, Q] : [P]) { const dx = e.o.x - p.x, dy = e.o.y - p.y, d = M.hypot(dx, dy) || 1; if (d < 260) { e.kx = dx / d * 700; e.ky = dy / d * 700; } }
+      // Empuja a cada bicho lejos del jugador que tenga más cerca (P1 o P2)
+      for (const e of en) { const p = Q && M.hypot(e.o.x - Q.x, e.o.y - Q.y) < M.hypot(e.o.x - P.x, e.o.y - P.y) ? Q : P, dx = e.o.x - p.x, dy = e.o.y - p.y, d = M.hypot(dx, dy) || 1; if (d < 260) { e.kx = dx / d * 700; e.ky = dy / d * 700; } }
       S.cameras.main.flash(300, 255, 60, 100); msg('¡PERDISTE UNA VIDA!\nte ' + (lv > 1 ? 'quedan ' + lv : 'queda 1'), '#ff3b6b'); tn(500, .6, 'square', .06, 120);
     }
     if (hp <= 0) end(0); else if (t >= NIGHT && !inf) dawn(); else if (xp >= xpN) lvUp();
