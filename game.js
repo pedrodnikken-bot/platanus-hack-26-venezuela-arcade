@@ -217,7 +217,7 @@ const CABINET_KEYS = {
     MN.push(S.add.rectangle(400, 300, 800, 600, 0x000000, .55).setDepth(55), tx(400, 115, 'ZANCUDO', 84, '#ffe14d'), tx(400, 190, 'SURVIVORS', 56, '#ff4d4d'),
       tx(400, 245, 'Te perdiste en el Ávila. Sobrevive hasta el amanecer', 18, '#cfe8ff'));
     MI.forEach((s, i) => MN.push(tx(400, 320 + i * 48, s, 30, '#fff')));
-    MN.push(S.add.image(0, 0, 'rk').setScale(3).setDepth(61).setAngle(70), tx(400, 545, '▲▼ elegir    BOTÓN 1 / START aceptar', 15, '#aaa'));
+    MN.push(S.add.image(0, 0, 'rk').setScale(3).setDepth(61).setAngle(70), tx(400, 540, '▲▼ elegir    BOTÓN 1 / START aceptar', 15, '#aaa'), tx(400, 578, 'PLATANUS HACK 26 · CARACAS EDITION', 16, '#ffe14d'));
     S.tweens.add({ targets: MN[8], scale: 3.4, yoyo: true, repeat: -1, duration: 300 });
   }
   function menuUp() {
