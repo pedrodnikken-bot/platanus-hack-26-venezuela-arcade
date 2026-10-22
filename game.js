@@ -41,7 +41,7 @@ const CABINET_KEYS = {
   // Avisos: cada uno en su propio renglón, con fondo oscuro, para que no se monten
   let MS = [];
   const msg = (s, c = '#ffe14d') => {
-    let i = 0; while (MS[i]) i++;
+    let i = 0; while (MS[i] && i < 4) i++;
     const o = tx(400, 140 + i * 85, s, 24, c, 65).setBackgroundColor('rgba(0,0,0,.65)').setPadding(14, 6); MS[i] = o;
     S.tweens.add({ targets: o, alpha: 0, delay: 1700, duration: 500, onComplete: () => { o.destroy(); MS[i] = 0; } });
   };
@@ -211,7 +211,7 @@ const CABINET_KEYS = {
 
   // ---- Menú de inicio ----
   const MI = ['1 JUGADOR', '2 JUGADORES', 'CÓMO JUGAR', 'RÉCORDS'];
-  const clr = () => { (MN || []).forEach(o => o.destroy()); MN = []; };
+  const clr = () => { (MN || []).forEach(o => { S.tweens.killTweensOf(o); o.destroy(); }); MN = []; };
   function menu() {
     clr(); st = 0;
     MN.push(S.add.rectangle(400, 300, 800, 600, 0x000000, .55).setDepth(55), tx(400, 115, 'ZANCUDO', 84, '#ffe14d'), tx(400, 190, 'SURVIVORS', 56, '#ff4d4d'),
@@ -270,9 +270,9 @@ const CABINET_KEYS = {
   }
 
   function start() {
-    clr(); deco.forEach(o => o.destroy()); mp && (SG.destroy(), (mp == 1 ? roraima : roques)()); TY.b.m = [0, 2, 1][mp]; IN.b = [[['dg'], .5], [['vn'], .3], [['hn'], .3]][mp]; W = mp == 2 && S.add.graphics().setDepth(1.5);
+    clr(); deco.forEach(o => o.destroy()); deco = []; mp && (SG.destroy(), (mp == 1 ? roraima : roques)()); TY.b.m = [0, 2, 1][mp]; IN.b = [[['dg'], .5], [['vn'], .3], [['hn'], .3]][mp]; W = mp == 2 && S.add.graphics().setDepth(1.5);
     st = 1; t = 0; en = []; dr = []; MS = []; kills = 0; xp = 0; xpN = 12; lvl = 1; fans = 0; spi = 0; sp = 0; ls = 0; sS = 0; seen = { z: 1 }; ol = 1; cb = 0; cbT = -9; pts = 0; inf = 0; pj = []; wT = 2; mN = 0; mS = 0;
-    hp = hpM = 100; off = 2; gas = gasM = 100; bom = 1; offE = -1; pz = 0; sk = {}; vac = 1; spE = 0; hT = -1; arp = 1; vcn = 1; rg = 0; lv = 1; inv = 0; nS = 0; nW = 40; nB = 120; nD = mp == 1 ? 30 : 55; wN = mp == 1 ? 14 : 1; wE = 0; pN = 5; nH = 90; dark = 0; dkE = 0;
+    hp = hpM = 100; off = 2; gas = gasM = 100; bom = 1; offE = -1; pz = 0; sk = {}; vac = 1; spE = 0; hT = -1; arp = 1; vcn = 1; rg = 0; lv = 1; inv = 0; nS = 0; nW = 40; nB = 120; nD = mp == 1 ? 30 : 55; wN = mp == 1 ? 14 : mp == 2 ? 6 : 1; wE = 0; pN = 5; nH = 90; dark = 0; dkE = 0;
     P = { x: 400, y: 330, a: 0, sp: 170, cd: 0, cdM: .32, rr: 62, dm: 1, full: 0, sw: 0 };
     P.ah = 30; P.ic = 0; CH[ci][3]();
     pl = S.add.image(P.x, P.y, 'pl' + ci).setScale(3).setDepth(6);
@@ -286,7 +286,7 @@ const CABINET_KEYS = {
       b: S.add.graphics().setDepth(59),
       c: tx(600, 22, '', 24, '#ffe14d'),
       k: tx(730, 22, '', 16, '#fff'),
-      cb: tx(720, 72, '', 18, '#ff8a4d'),
+      cb: tx(785, 72, '', 18, '#ff8a4d').setOrigin(1, .5),
       w: tx(735, 570, '', 14, '#ff8a4d'),
       l: tx(400, 574, '', 14, '#fff'),
       o: tx(262, 22, '', 13, '#7dff9a').setOrigin(0, .5),
@@ -686,9 +686,9 @@ const CABINET_KEYS = {
         else if (d.k == 'rd') { gas = M.min(gasM, gas + 50); pop(P.x, P.y - 40, '+RAID', '#d8f070'); }
         else if (d.k == 'vd') { lv < 3 ? (lv++, msg('¡VIDA EXTRA!', '#ff3b6b')) : (hp = hpM); [523, 784, 1047, 1568].forEach((f, i) => S.time.delayedCall(i * 90, () => tn(f, .12))); }
         else { bom++; pop(P.x, P.y - 40, '+1 BOMBA', '#ff8a8a'); }
-        tn(660, .08); S.time.delayedCall(80, () => tn(990, .1)); d.o.destroy(); return 0;
+        tn(660, .08); S.time.delayedCall(80, () => tn(990, .1)); S.tweens.killTweensOf(d.o); d.o.destroy(); return 0;
       }
-      if (t > d.e) { d.o.destroy(); return 0; }
+      if (t > d.e) { S.tweens.killTweensOf(d.o); d.o.destroy(); return 0; }
       d.o.setAlpha(d.e - t < 3 && t * 8 % 2 < 1 ? .3 : 1);
       return 1;
     });
@@ -712,13 +712,12 @@ const CABINET_KEYS = {
     HUD.e.setText(Object.keys(sk).filter(sick).map(k => SK[k][3] + ' ' + M.ceil(sk[k] - t)).concat(t < spE ? ['ESPIRAL ' + M.ceil(spE - t)] : []).join('   '));
     HUD.o.setText(off > 5 ? '+' + (off - 5) : ''); HUD.m.setText(bom > 5 ? '+' + (bom - 5) : '');
 
-    if (xp >= xpN) lvUp();
     if (hp <= 0 && lv > 1) {
       lv--; hp = hpM; rg = 0; pz = 0; sk = {}; inv = t + 3;
       for (const e of en) if (M.hypot(e.o.x - P.x, e.o.y - P.y) < 260) hit(e, 0, 700);
       S.cameras.main.flash(300, 255, 60, 100); msg('¡PERDISTE UNA VIDA!\nte ' + (lv > 1 ? 'quedan ' + lv : 'queda 1'), '#ff3b6b'); tn(500, .6, 'square', .06, 120);
     }
-    if (hp <= 0) end(0); else if (t >= NIGHT && !inf) dawn();
+    if (hp <= 0) end(0); else if (t >= NIGHT && !inf) dawn(); else if (xp >= xpN) lvUp();
   }
 
   function update(time, dl) {
